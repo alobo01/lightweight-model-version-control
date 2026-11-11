@@ -5,8 +5,6 @@ when several researchers work on the same training pipeline. This repository is 
 experiment, person, email address, organisation and revision in it is fictional, so the links
 do not resolve.
 
-**Author:** Antonio Lobo-Santos
-
 ## Idea
 
 Researchers train, evaluate and upload models exactly as they do today. The only extra step is
@@ -102,4 +100,20 @@ scripts/registry.py    validator and graph compiler
 tests/                 validator tests
 .github/               workflow, pull request template, rejected-experiment issue form
 LINEAGE.md             generated output
+```
+
+## Citation
+
+If you use or adapt this approach, please cite:
+
+> Antonio Lobo-Santos. *Lightweight model version control*. GitHub repository, 2026.
+> https://github.com/alobo01/lightweight-model-version-control
+
+```bibtex
+@misc{lobosantos2026lightweight,
+  author       = {Lobo-Santos, Antonio},
+  title        = {Lightweight model version control},
+  year         = {2026},
+  howpublished = {\url{https://github.com/alobo01/lightweight-model-version-control}}
+}
 ```
