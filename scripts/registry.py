@@ -7,6 +7,7 @@ Usage:
 """
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import Path
 
@@ -96,6 +97,8 @@ def validate(pipeline: dict, experiments: list[dict]) -> list[str]:
         code = _mapping(exp.get("code"))
         if exp.get("code") and not (code.get("repo") and code.get("commit")):
             errors.append(f"{eid}: code needs repo and commit")
+        elif exp.get("code") and not re.fullmatch(r"[\w.-]+/[\w.-]+", str(code["repo"])):
+            errors.append(f"{eid}: code.repo '{code['repo']}' must be a GitHub repository as owner/name")
         for out in exp.get("outputs") or []:
             register(eid, out)
 
@@ -201,7 +204,8 @@ def render_mermaid(pipeline: dict, experiments: list[dict]) -> str:
 
     for exp in experiments:
         eid, status = exp["id"], exp["status"]
-        lines.append(f'  {_node(eid)}["{eid} · {phase_label[exp["phase"]]}<br/>{status}"]')
+        code = f'{exp["code"]["repo"]}@{exp["code"]["commit"]}'
+        lines.append(f'  {_node(eid)}["{eid} · {phase_label[exp["phase"]]}<br/>{status}<br/><small>{code}</small>"]')
         classify(eid, status)
         for inp in exp["inputs"]:
             label = f'|{inp["weight"]}|' if "weight" in inp else ""
@@ -237,6 +241,11 @@ def render(pipeline: dict, experiments: list[dict]) -> str:
     def commit_link(repo: str, commit: str) -> str:
         return f"[{repo}@{commit}](https://github.com/{repo}/commit/{commit})"
 
+    def code_link(code: dict) -> str:
+        repo, commit = code["repo"], code["commit"]
+        return (f"[{repo}](https://github.com/{repo}) @ "
+                f"[{commit}](https://github.com/{repo}/commit/{commit})")
+
     def owner(exp: dict) -> str:
         o = exp["owner"]
         return f'[{o["name"]}](mailto:{o["email"]}) (`{o["github"]}`)'
@@ -263,7 +272,7 @@ def render(pipeline: dict, experiments: list[dict]) -> str:
         "",
         "## Experiments",
         "",
-        "| Experiment | Phase | Objective | Owner | Status | Parents | Outputs | Code |",
+        "| Experiment | Phase | Objective | Owner | Status | Parents | Outputs | GitHub code |",
         "| --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     for exp in ordered:
@@ -271,7 +280,7 @@ def render(pipeline: dict, experiments: list[dict]) -> str:
         doc.append(
             f'| {exp["id"]} | {phase_label[exp["phase"]]} | {exp["title"]} | {owner(exp)} | '
             f'{exp["status"]} | {inputs(exp)} | {outs} | '
-            f'{commit_link(exp["code"]["repo"], exp["code"]["commit"])} |'
+            f'{code_link(exp["code"])} |'
         )
 
     doc += [

@@ -6,7 +6,7 @@ phase: rlvr                 # a phase id from pipeline.yaml
 owner: {name: Your Name, email: you@example.org, github: your-github-handle}
 status: planned             # planned | running | paused | accepted | inconclusive
 method: short-method-name
-code: {repo: example-org/training, commit: abc1234}
+code: {repo: example-org/training, commit: abc1234}   # GitHub repository (owner/name) and commit that produced the outputs
 inputs:                     # parent checkpoints, pinned exactly as registered
   - {model: parent-model-id, hf: {repo: example-org/parent, revision: abc1234}}
   # souping: list every merged checkpoint and give each a `weight:` (weights sum to 1)

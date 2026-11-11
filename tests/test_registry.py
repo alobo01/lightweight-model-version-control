@@ -70,6 +70,12 @@ def test_rejected_status_is_not_a_registry_status():
     assert any("unknown status 'discarded'" in e for e in errors)
 
 
+def test_code_repo_must_be_github_owner_and_name():
+    for bad in ("https://github.com/example-org/training", "training"):
+        errors = errors_after(lambda p, by_id, _: by_id["exp-004"]["code"].update(repo=bad))
+        assert any("must be a GitHub repository as owner/name" in e for e in errors)
+
+
 def test_cycle_is_rejected():
     def mutate(p, by_id, _):
         by_id["exp-001"]["inputs"][0] = {
