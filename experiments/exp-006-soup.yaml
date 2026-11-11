@@ -1,15 +1,17 @@
 id: exp-006
-title: Weighted soup of two RLVR checkpoints
+title: Weighted soup of three RLVR checkpoints
 phase: souping
-owner: researcher-a
+owner: {name: Researcher A, email: researcher-a@example.org, github: researcher-a}
 status: accepted
 method: weighted_average
 code: {repo: example-org/merging, commit: 8f3a21c}
 inputs:
-  - {model: rlvr-a-v2, weight: 0.6}
-  - {model: rlvr-b-v1, weight: 0.4}
+  - {model: rlvr-a-v1, hf: {repo: example-org/rlvr-a, revision: 6a1c3e5}, weight: 0.2}
+  - {model: rlvr-a-v2, hf: {repo: example-org/rlvr-a, revision: 8c2e4f6}, weight: 0.4}
+  - {model: rlvr-b-v1, hf: {repo: example-org/rlvr-b, revision: 2f5b8d1}, weight: 0.4}
 outputs:
   - id: soup-v1
     hf: {repo: example-org/soup-v1, revision: 4c1d9e2}
-    eval: runs/soup-v1
-notes: Better aggregate results than either input.
+    eval: {commit: d41e7aa}
+    scores: {math: 0.612, code: 0.548, chat: 7.6, safety: 0.946}
+notes: Better aggregate than any single input. A uniform soup was tried and rejected (see issues).

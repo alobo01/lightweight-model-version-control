@@ -1,13 +1,14 @@
 id: exp-002
 title: First RLHF round
 phase: rlhf1
-owner: researcher-b
+owner: {name: Researcher B, email: researcher-b@example.org, github: researcher-b}
 status: accepted
 method: rlhf
 code: {repo: example-org/training, commit: 2a7b4c6}
 inputs:
-  - {model: sft-v1}
+  - {model: sft-v1, hf: {repo: example-org/sft-v1, revision: 5d2c7a1}}
 outputs:
   - id: rlhf1-v1
     hf: {repo: example-org/rlhf1-v1, revision: 9e3f1b0}
-    eval: runs/rlhf1-v1
+    eval: {commit: d41e7aa}
+    scores: {math: 0.437, code: 0.401, chat: 7.3, safety: 0.931}

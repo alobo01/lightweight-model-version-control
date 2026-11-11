@@ -1,13 +1,14 @@
 id: exp-001
 title: Supervised fine-tuning on the instruction set
 phase: sft
-owner: researcher-a
+owner: {name: Researcher A, email: researcher-a@example.org, github: researcher-a}
 status: accepted
 method: sft
 code: {repo: example-org/training, commit: 1f0e9d8}
 inputs:
-  - {model: base}
+  - {model: base, hf: {repo: example-org/base-model, revision: 0a1b2c3}}
 outputs:
   - id: sft-v1
     hf: {repo: example-org/sft-v1, revision: 5d2c7a1}
-    eval: runs/sft-v1
+    eval: {commit: d41e7aa}
+    scores: {math: 0.412, code: 0.385, chat: 6.8, safety: 0.902}

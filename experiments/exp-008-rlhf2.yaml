@@ -1,13 +1,14 @@
 id: exp-008
 title: Final RLHF alignment round
 phase: rlhf2
-owner: researcher-b
+owner: {name: Researcher B, email: researcher-b@example.org, github: researcher-b}
 status: accepted
 method: rlhf
 code: {repo: example-org/training, commit: 7a2b9c1}
 inputs:
-  - {model: opsd-v1}
+  - {model: opsd-v1, hf: {repo: example-org/opsd-v1, revision: 3d7f9a2}}
 outputs:
   - id: rlhf2-v1
     hf: {repo: example-org/rlhf2-v1, revision: 1e6c8b4}
-    eval: runs/rlhf2-v1
+    eval: {commit: d41e7aa}
+    scores: {math: 0.619, code: 0.553, chat: 8.2, safety: 0.963}

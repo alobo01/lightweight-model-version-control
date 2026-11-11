@@ -1,8 +1,10 @@
 **Experiment:** exp-NNN
 **Change:** new experiment / checkpoint added / status change / promote to main
 
-- [ ] Hugging Face `revision` is a commit hash, not a branch name
+- [ ] `owner` has name, email and GitHub handle
+- [ ] Every parent in `inputs` has its Hugging Face `repo` and `revision` (and `weight` for soups)
+- [ ] Hugging Face `revision` values are commit hashes, not branch names
 - [ ] `code.commit` is the commit that produced the checkpoint
-- [ ] `eval` points to the run in the evaluation repository (no scores copied here)
-- [ ] `reason` given if the experiment is discarded
+- [ ] Scores copied from the evaluation output, with the evaluation-code `eval.commit`
+- [ ] Rejected? Use the *Rejected experiment* issue form instead of this pull request
 - [ ] `LINEAGE.md` not edited by hand

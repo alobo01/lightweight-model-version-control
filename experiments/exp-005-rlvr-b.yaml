@@ -1,13 +1,14 @@
 id: exp-005
 title: RLVR with exact-match rewards
 phase: rlvr
-owner: researcher-b
+owner: {name: Researcher B, email: researcher-b@example.org, github: researcher-b}
 status: accepted
 method: rlvr
 code: {repo: example-org/training, commit: 5e0f7a9}
 inputs:
-  - {model: dpo-v1}
+  - {model: dpo-v1, hf: {repo: example-org/dpo-v1, revision: 7b4a2d9}}
 outputs:
   - id: rlvr-b-v1
     hf: {repo: example-org/rlvr-b, revision: 2f5b8d1}
-    eval: runs/rlvr-b-v1
+    eval: {commit: d41e7aa}
+    scores: {math: 0.589, code: 0.441, chat: 7.5, safety: 0.941}

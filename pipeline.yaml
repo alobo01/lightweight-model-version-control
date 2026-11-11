@@ -6,13 +6,17 @@ name: Alignment training pipeline (demo)
 # Promote a checkpoint by changing this one line in a pull request.
 main: rlhf2-v1
 
-# Common evaluation repository. Experiment outputs point into it rather than copying scores.
+# Common evaluation code. Scores are copied into each output, together with the commit of
+# this repository that produced them, so results stay reproducible and comparable.
 eval_repo: example-org/evaluation
+benchmarks: [math, code, chat, safety]
 
 # Checkpoints that enter the registry from outside (no producing experiment).
 base_models:
   - id: base
     hf: {repo: example-org/base-model, revision: 0a1b2c3}
+    eval: {commit: d41e7aa}
+    scores: {math: 0.301, code: 0.276, chat: 5.1, safety: 0.817}
 
 # Display order follows list order.
 phases:

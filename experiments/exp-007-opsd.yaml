@@ -1,13 +1,14 @@
 id: exp-007
 title: OPSD on the merged checkpoint
 phase: opsd
-owner: researcher-c
+owner: {name: Researcher C, email: researcher-c@example.org, github: researcher-c}
 status: accepted
 method: opsd
 code: {repo: example-org/training, commit: 6f1a8b0}
 inputs:
-  - {model: soup-v1}
+  - {model: soup-v1, hf: {repo: example-org/soup-v1, revision: 4c1d9e2}}
 outputs:
   - id: opsd-v1
     hf: {repo: example-org/opsd-v1, revision: 3d7f9a2}
-    eval: runs/opsd-v1
+    eval: {commit: d41e7aa}
+    scores: {math: 0.624, code: 0.556, chat: 7.8, safety: 0.948}

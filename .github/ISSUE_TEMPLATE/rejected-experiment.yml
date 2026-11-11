@@ -1,0 +1,51 @@
+name: Rejected experiment
+description: Keep a record of an experiment that will not enter the lineage.
+title: "[rejected] "
+labels: [rejected]
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        File this, then close the issue as **not planned**. Rejected work is kept here rather
+        than in `experiments/`, so the registry only holds checkpoints that are used or in progress.
+  - type: dropdown
+    id: phase
+    attributes:
+      label: Phase
+      options: [SFT, RLHF 1, DPO, RLVR, Souping, OPSD, RLHF 2]
+    validations: {required: true}
+  - type: input
+    id: owner
+    attributes:
+      label: Owner
+      placeholder: Name <email> (github-handle)
+    validations: {required: true}
+  - type: textarea
+    id: parents
+    attributes:
+      label: Parent checkpoints
+      description: Registered model id and Hugging Face repo@revision; add the weight for merges.
+      placeholder: "- dpo-v1 — example-org/dpo-v1@7b4a2d9"
+    validations: {required: true}
+  - type: input
+    id: code
+    attributes:
+      label: Training code
+      placeholder: example-org/training@abc1234
+    validations: {required: true}
+  - type: textarea
+    id: checkpoints
+    attributes:
+      label: Resulting checkpoints and scores
+      description: Hugging Face repo@revision, scores copied from the evaluation output, and the evaluation-code commit.
+      placeholder: |
+        | Checkpoint | math | code | chat | safety |
+        | --- | ---: | ---: | ---: | ---: |
+        | example-org/rlvr-c@5a9d1f3 | 0.401 | 0.430 | 7.7 | 0.889 |
+
+        Evaluation code: example-org/evaluation@d41e7aa
+  - type: textarea
+    id: reason
+    attributes:
+      label: Why it was rejected
+    validations: {required: true}

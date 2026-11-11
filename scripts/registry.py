@@ -13,42 +13,65 @@ from pathlib import Path
 import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
-STATUSES = ("planned", "running", "paused", "accepted", "discarded", "inconclusive")
+STATUSES = ("planned", "running", "paused", "accepted", "inconclusive")
 IN_PROGRESS = ("planned", "running", "paused")
-REQUIRED = ("id", "title", "phase", "owner", "status", "inputs")
+REQUIRED = ("id", "title", "phase", "owner", "status", "code", "inputs")
+REJECTED_ISSUES = "../../issues?q=is%3Aissue+label%3Arejected"
 
 
 def load(root: Path = ROOT) -> tuple[dict, list[dict]]:
-    pipeline = yaml.safe_load((root / "pipeline.yaml").read_text())
+    pipeline = _hashes_as_text(yaml.safe_load((root / "pipeline.yaml").read_text()))
     experiments = [
-        yaml.safe_load(path.read_text())
+        _hashes_as_text(yaml.safe_load(path.read_text()))
         for path in sorted((root / "experiments").glob("*.yaml"))
         if not path.name.startswith("_")
     ]
     return pipeline, experiments
 
 
+def _hashes_as_text(node):
+    """YAML reads an all-digit hash such as 0123456 as a number; keep revisions and commits as text."""
+    if isinstance(node, dict):
+        return {
+            k: str(v) if k in ("revision", "commit") and isinstance(v, int) else _hashes_as_text(v)
+            for k, v in node.items()
+        }
+    if isinstance(node, list):
+        return [_hashes_as_text(v) for v in node]
+    return node
+
+
 def validate(pipeline: dict, experiments: list[dict]) -> list[str]:
     """Return a list of human-readable problems; empty means the registry is valid."""
     errors: list[str] = []
     phases = {p["id"] for p in pipeline.get("phases", [])}
-    models: dict[str, str] = {}  # model id -> where it is defined
+    benchmarks = pipeline.get("benchmarks", [])
+    models: dict[str, tuple[str, dict]] = {}  # model id -> (where it is defined, hf pointer)
     seen_experiments: set[str] = set()
 
-    def check_hf(owner: str, model: dict) -> None:
-        hf = model.get("hf") or {}
-        if not hf.get("repo") or not hf.get("revision"):
-            errors.append(f"{owner}: model '{model.get('id')}' needs hf.repo and hf.revision")
-
-    def register(owner: str, model: dict) -> None:
+    def register(where: str, model: dict) -> None:
         mid = model.get("id")
+        hf = _mapping(model.get("hf"))
         if not mid:
-            errors.append(f"{owner}: model without an id")
-        elif mid in models:
-            errors.append(f"{owner}: model id '{mid}' already defined by {models[mid]}")
+            errors.append(f"{where}: model without an id")
+            return
+        if mid in models:
+            errors.append(f"{where}: model id '{mid}' already defined by {models[mid][0]}")
         else:
-            models[mid] = owner
-        check_hf(owner, model)
+            models[mid] = (where, hf)
+        if not hf.get("repo") or not hf.get("revision"):
+            errors.append(f"{where}: model '{mid}' needs hf.repo and hf.revision")
+        if not _mapping(model.get("eval")).get("commit"):
+            errors.append(f"{where}: model '{mid}' needs eval.commit (evaluation code version)")
+        scores = _mapping(model.get("scores"))
+        missing = [b for b in benchmarks if b not in scores]
+        if missing:
+            errors.append(f"{where}: model '{mid}' is missing scores for {', '.join(missing)}")
+        for name, value in scores.items():
+            if name not in benchmarks:
+                errors.append(f"{where}: model '{mid}' has unknown benchmark '{name}'")
+            elif isinstance(value, bool) or not isinstance(value, (int, float)):
+                errors.append(f"{where}: model '{mid}' score '{name}' is not a number")
 
     for base in pipeline.get("base_models", []):
         register("pipeline.yaml", base)
@@ -56,7 +79,7 @@ def validate(pipeline: dict, experiments: list[dict]) -> list[str]:
     for exp in experiments:
         eid = exp.get("id", "<missing id>")
         for field in REQUIRED:
-            if exp.get(field) in (None, "", []):
+            if exp.get(field) in (None, "", [], {}):
                 errors.append(f"{eid}: missing '{field}'")
         if eid in seen_experiments:
             errors.append(f"{eid}: duplicate experiment id")
@@ -64,16 +87,42 @@ def validate(pipeline: dict, experiments: list[dict]) -> list[str]:
         if exp.get("phase") not in phases:
             errors.append(f"{eid}: unknown phase '{exp.get('phase')}'")
         if exp.get("status") not in STATUSES:
-            errors.append(f"{eid}: unknown status '{exp.get('status')}'")
-        if exp.get("status") == "discarded" and not exp.get("reason"):
-            errors.append(f"{eid}: discarded experiments need a 'reason'")
+            errors.append(f"{eid}: unknown status '{exp.get('status')}' (rejected work goes to an issue)")
+        owner = exp.get("owner") or {}
+        if not isinstance(owner, dict) or not all(owner.get(k) for k in ("name", "email", "github")):
+            errors.append(f"{eid}: owner needs name, email and github")
+        elif "@" not in owner["email"]:
+            errors.append(f"{eid}: owner email '{owner['email']}' is not valid")
+        code = _mapping(exp.get("code"))
+        if exp.get("code") and not (code.get("repo") and code.get("commit")):
+            errors.append(f"{eid}: code needs repo and commit")
         for out in exp.get("outputs") or []:
             register(eid, out)
 
     for exp in experiments:
-        for inp in exp.get("inputs") or []:
-            if inp.get("model") not in models:
-                errors.append(f"{exp.get('id')}: input model '{inp.get('model')}' is not registered")
+        eid = exp.get("id")
+        inputs = exp.get("inputs") or []
+        for inp in inputs:
+            mid = inp.get("model")
+            if mid not in models:
+                errors.append(f"{eid}: input model '{mid}' is not registered")
+                continue
+            hf, registered = _mapping(inp.get("hf")), models[mid][1]
+            if not hf.get("repo") or not hf.get("revision"):
+                errors.append(f"{eid}: input '{mid}' needs hf.repo and hf.revision")
+            elif (hf["repo"], hf["revision"]) != (registered.get("repo"), registered.get("revision")):
+                errors.append(
+                    f"{eid}: input '{mid}' points to {hf['repo']}@{hf['revision']}, "
+                    f"but it is registered as {registered.get('repo')}@{registered.get('revision')}"
+                )
+        if exp.get("phase") == "souping":
+            weights = [inp.get("weight") for inp in inputs]
+            if len(inputs) < 2:
+                errors.append(f"{eid}: a soup needs at least two input checkpoints")
+            elif any(not isinstance(w, (int, float)) for w in weights):
+                errors.append(f"{eid}: every soup input needs a numeric 'weight'")
+            elif abs(sum(weights) - 1) > 1e-6:
+                errors.append(f"{eid}: soup weights sum to {sum(weights):g}, not 1")
 
     main = pipeline.get("main")
     if main not in models:
@@ -82,6 +131,11 @@ def validate(pipeline: dict, experiments: list[dict]) -> list[str]:
     if not errors and _has_cycle(experiments):
         errors.append("lineage contains a cycle")
     return errors
+
+
+def _mapping(value) -> dict:
+    """Treat anything that is not a mapping as missing, so validation reports it."""
+    return value if isinstance(value, dict) else {}
 
 
 def _has_cycle(experiments: list[dict]) -> bool:
@@ -127,20 +181,22 @@ def render_mermaid(pipeline: dict, experiments: list[dict]) -> str:
     lineage = main_lineage(pipeline, experiments)
     phase_label = {p["id"]: p["label"] for p in pipeline["phases"]}
     lines = ["flowchart LR"]
-    classes: dict[str, list[str]] = {"lineage": [], "discarded": [], "progress": [], "main": []}
+    classes: dict[str, list[str]] = {"lineage": [], "progress": [], "main": []}
 
     def classify(identifier: str, status: str | None) -> None:
         if identifier == pipeline["main"]:
             classes["main"].append(_node(identifier))
-        elif status == "discarded":
-            classes["discarded"].append(_node(identifier))
         elif status in IN_PROGRESS:
             classes["progress"].append(_node(identifier))
         elif identifier in lineage:
             classes["lineage"].append(_node(identifier))
 
+    def model_node(model: dict) -> str:
+        suffix = " · main" if model["id"] == pipeline["main"] else ""
+        return f'  {_node(model["id"])}(["{model["id"]}{suffix}<br/>@{model["hf"]["revision"]}"])'
+
     for base in pipeline.get("base_models", []):
-        lines.append(f'  {_node(base["id"])}(["{base["id"]}"])')
+        lines.append(model_node(base))
         classify(base["id"], None)
 
     for exp in experiments:
@@ -151,15 +207,13 @@ def render_mermaid(pipeline: dict, experiments: list[dict]) -> str:
             label = f'|{inp["weight"]}|' if "weight" in inp else ""
             lines.append(f'  {_node(inp["model"])} -->{label} {_node(eid)}')
         for out in exp.get("outputs") or []:
-            suffix = " · main" if out["id"] == pipeline["main"] else ""
-            lines.append(f'  {_node(out["id"])}(["{out["id"]}{suffix}"])')
+            lines.append(model_node(out))
             lines.append(f'  {_node(eid)} --> {_node(out["id"])}')
             classify(out["id"], status)
 
     lines += [
         "  classDef lineage fill:#dbeafe,stroke:#2563eb,color:#1e3a8a",
         "  classDef main fill:#dcfce7,stroke:#15803d,color:#14532d,stroke-width:3px",
-        "  classDef discarded fill:#fee2e2,stroke:#b91c1c,color:#7f1d1d,stroke-dasharray:5 4",
         "  classDef progress fill:#fef9c3,stroke:#a16207,color:#713f12,stroke-dasharray:2 3",
     ]
     lines += [f"  class {','.join(ids)} {name}" for name, ids in classes.items() if ids]
@@ -169,6 +223,7 @@ def render_mermaid(pipeline: dict, experiments: list[dict]) -> str:
 def render(pipeline: dict, experiments: list[dict]) -> str:
     phase_order = {p["id"]: n for n, p in enumerate(pipeline["phases"])}
     phase_label = {p["id"]: p["label"] for p in pipeline["phases"]}
+    benchmarks = pipeline.get("benchmarks", [])
     ordered = sorted(experiments, key=lambda e: (phase_order[e["phase"]], e["id"]))
     used_by: dict[str, list[str]] = {}
     for exp in experiments:
@@ -179,20 +234,17 @@ def render(pipeline: dict, experiments: list[dict]) -> str:
         url = f'https://huggingface.co/{hf["repo"]}/tree/{hf["revision"]}'
         return f'[{hf["repo"]}@{hf["revision"]}]({url})'
 
-    def code_link(exp: dict) -> str:
-        code = exp.get("code")
-        if not code:
-            return "–"
-        return f'[{code["repo"]}@{code["commit"]}](https://github.com/{code["repo"]}/commit/{code["commit"]})'
+    def commit_link(repo: str, commit: str) -> str:
+        return f"[{repo}@{commit}](https://github.com/{repo}/commit/{commit})"
 
-    def eval_link(out: dict) -> str:
-        if not out.get("eval"):
-            return "–"
-        return f'[{out["eval"]}](https://github.com/{pipeline["eval_repo"]}/tree/main/{out["eval"]})'
+    def owner(exp: dict) -> str:
+        o = exp["owner"]
+        return f'[{o["name"]}](mailto:{o["email"]}) (`{o["github"]}`)'
 
     def inputs(exp: dict) -> str:
-        return ", ".join(
-            f'`{i["model"]}`' + (f' ×{i["weight"]}' if "weight" in i else "") for i in exp["inputs"]
+        return "<br/>".join(
+            f'`{i["model"]}` {hf_link(i["hf"])}' + (f' ×{i["weight"]}' if "weight" in i else "")
+            for i in exp["inputs"]
         )
 
     doc = [
@@ -206,41 +258,51 @@ def render(pipeline: dict, experiments: list[dict]) -> str:
         render_mermaid(pipeline, experiments),
         "```",
         "",
-        "Green: current main · blue: ancestry of main · yellow: in progress · red: discarded · "
+        "Green: current main · blue: ancestry of main · yellow: in progress · "
         "unshaded: accepted, not in main's ancestry.",
         "",
         "## Experiments",
         "",
-        "| Experiment | Phase | Objective | Owner | Status | Inputs | Outputs | Code |",
+        "| Experiment | Phase | Objective | Owner | Status | Parents | Outputs | Code |",
         "| --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     for exp in ordered:
         outs = ", ".join(f'`{o["id"]}`' for o in exp.get("outputs") or []) or "–"
         doc.append(
-            f'| {exp["id"]} | {phase_label[exp["phase"]]} | {exp["title"]} | `{exp["owner"]}` | '
-            f'{exp["status"]} | {inputs(exp)} | {outs} | {code_link(exp)} |'
+            f'| {exp["id"]} | {phase_label[exp["phase"]]} | {exp["title"]} | {owner(exp)} | '
+            f'{exp["status"]} | {inputs(exp)} | {outs} | '
+            f'{commit_link(exp["code"]["repo"], exp["code"]["commit"])} |'
         )
 
     doc += [
         "",
         "## Checkpoints",
         "",
-        "| Model | Produced by | Checkpoint | Evaluation | Used by |",
-        "| --- | --- | --- | --- | --- |",
+        f"Scores produced by [`{pipeline['eval_repo']}`](https://github.com/{pipeline['eval_repo']}) "
+        "at the listed commit.",
+        "",
+        "| Model | Produced by | Checkpoint | " + " | ".join(benchmarks) + " | Eval code | Used by |",
+        "| --- | --- | --- | " + " | ".join("---:" for _ in benchmarks) + " | --- | --- |",
     ]
 
     def model_row(model: dict, source: str) -> str:
         name = f'**`{model["id"]}`** (main)' if model["id"] == pipeline["main"] else f'`{model["id"]}`'
+        scores = " | ".join(f'{model["scores"][b]:g}' for b in benchmarks)
+        commit = model["eval"]["commit"]
+        eval_link = f"[{commit}](https://github.com/{pipeline['eval_repo']}/commit/{commit})"
         users = ", ".join(used_by.get(model["id"], [])) or "–"
-        return f'| {name} | {source} | {hf_link(model["hf"])} | {eval_link(model)} | {users} |'
+        return f'| {name} | {source} | {hf_link(model["hf"])} | {scores} | {eval_link} | {users} |'
 
     doc += [model_row(base, "external") for base in pipeline.get("base_models", [])]
     doc += [model_row(out, exp["id"]) for exp in ordered for out in exp.get("outputs") or []]
 
-    discarded = [e for e in ordered if e["status"] == "discarded"]
-    if discarded:
-        doc += ["", "## Discarded work", ""]
-        doc += [f'- **{e["id"]} — {e["title"]}** (`{e["owner"]}`): {e["reason"]}' for e in discarded]
+    doc += [
+        "",
+        "## Rejected experiments",
+        "",
+        f"Rejected work is kept as [closed issues labelled `rejected`]({REJECTED_ISSUES}), "
+        "with its parents, checkpoints, scores and the reason it was dropped.",
+    ]
     return "\n".join(doc) + "\n"
 
 
