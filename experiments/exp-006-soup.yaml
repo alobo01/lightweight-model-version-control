@@ -1,0 +1,15 @@
+id: exp-006
+title: Weighted soup of two RLVR checkpoints
+phase: souping
+owner: researcher-a
+status: accepted
+method: weighted_average
+code: {repo: example-org/merging, commit: 8f3a21c}
+inputs:
+  - {model: rlvr-a-v2, weight: 0.6}
+  - {model: rlvr-b-v1, weight: 0.4}
+outputs:
+  - id: soup-v1
+    hf: {repo: example-org/soup-v1, revision: 4c1d9e2}
+    eval: runs/soup-v1
+notes: Better aggregate results than either input.

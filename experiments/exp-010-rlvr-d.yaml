@@ -1,0 +1,10 @@
+id: exp-010
+title: RLVR with a longer task horizon
+phase: rlvr
+owner: researcher-c
+status: running
+method: rlvr
+code: {repo: example-org/training, commit: 9c4d1e3}
+inputs:
+  - {model: dpo-v1}
+outputs: []

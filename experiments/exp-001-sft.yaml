@@ -1,0 +1,13 @@
+id: exp-001
+title: Supervised fine-tuning on the instruction set
+phase: sft
+owner: researcher-a
+status: accepted
+method: sft
+code: {repo: example-org/training, commit: 1f0e9d8}
+inputs:
+  - {model: base}
+outputs:
+  - id: sft-v1
+    hf: {repo: example-org/sft-v1, revision: 5d2c7a1}
+    eval: runs/sft-v1

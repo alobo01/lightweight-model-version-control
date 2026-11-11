@@ -1,0 +1,25 @@
+# Pipeline definition: phases, external base models and the current main checkpoint.
+# Lineage is never defined here; it is compiled from experiment inputs and outputs.
+id: alignment-demo
+name: Alignment training pipeline (demo)
+
+# Promote a checkpoint by changing this one line in a pull request.
+main: rlhf2-v1
+
+# Common evaluation repository. Experiment outputs point into it rather than copying scores.
+eval_repo: example-org/evaluation
+
+# Checkpoints that enter the registry from outside (no producing experiment).
+base_models:
+  - id: base
+    hf: {repo: example-org/base-model, revision: 0a1b2c3}
+
+# Display order follows list order.
+phases:
+  - {id: sft, label: SFT, framework: sft-trainer}
+  - {id: rlhf1, label: RLHF 1, framework: rl-trainer}
+  - {id: dpo, label: DPO, framework: rl-trainer}
+  - {id: rlvr, label: RLVR, framework: rl-trainer}
+  - {id: souping, label: Souping, framework: merge-tool}
+  - {id: opsd, label: OPSD, framework: rl-trainer}
+  - {id: rlhf2, label: RLHF 2, framework: rl-trainer}

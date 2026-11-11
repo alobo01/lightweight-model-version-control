@@ -1,0 +1,17 @@
+id: exp-004
+title: RLVR with unit-test rewards
+phase: rlvr
+owner: researcher-a
+status: accepted
+method: rlvr
+code: {repo: example-org/training, commit: 4d9e6f8}
+inputs:
+  - {model: dpo-v1}
+outputs:
+  - id: rlvr-a-v1
+    hf: {repo: example-org/rlvr-a, revision: 6a1c3e5}
+    eval: runs/rlvr-a-v1
+  - id: rlvr-a-v2
+    hf: {repo: example-org/rlvr-a, revision: 8c2e4f6}
+    eval: runs/rlvr-a-v2
+notes: Two checkpoints from one run; v2 is the later step and the stronger of the two.

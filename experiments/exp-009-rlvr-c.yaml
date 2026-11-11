@@ -1,0 +1,14 @@
+id: exp-009
+title: RLVR with a learned reward model
+phase: rlvr
+owner: researcher-c
+status: discarded
+method: rlvr
+code: {repo: example-org/training, commit: 8b3c0d2}
+inputs:
+  - {model: dpo-v1}
+outputs:
+  - id: rlvr-c-v1
+    hf: {repo: example-org/rlvr-c, revision: 5a9d1f3}
+    eval: runs/rlvr-c-v1
+reason: Reward model was exploited; verifiable-task accuracy fell below the DPO parent.

@@ -1,0 +1,13 @@
+id: exp-003
+title: Preference optimisation on curated pairs
+phase: dpo
+owner: researcher-a
+status: accepted
+method: dpo
+code: {repo: example-org/training, commit: 3c8d5e7}
+inputs:
+  - {model: rlhf1-v1}
+outputs:
+  - id: dpo-v1
+    hf: {repo: example-org/dpo-v1, revision: 7b4a2d9}
+    eval: runs/dpo-v1

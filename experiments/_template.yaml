@@ -1,0 +1,16 @@
+# Copy to experiments/exp-NNN-short-name.yaml and fill in. Only add outputs once they exist.
+id: exp-NNN
+title: One-line objective
+phase: rlvr                 # a phase id from pipeline.yaml
+owner: your-github-handle
+status: planned             # planned | running | paused | accepted | discarded | inconclusive
+method: short-method-name
+code: {repo: example-org/training, commit: abc1234}
+inputs:
+  - {model: parent-model-id}          # add `weight:` for merges
+outputs: []
+#  - id: new-model-id
+#    hf: {repo: example-org/new-model-id, revision: abc1234}   # immutable commit, not a branch
+#    eval: runs/new-model-id                                    # path in the evaluation repository
+# reason: required when status is discarded
+# notes: optional free text
