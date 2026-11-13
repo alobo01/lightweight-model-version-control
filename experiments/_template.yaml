@@ -1,4 +1,6 @@
-# Copy to experiments/exp-NNN-short-name.yaml and fill in. Only add outputs once they exist.
+# Start with README.md examples: one-parent RLVR, then a multi-parent soup.
+# Copy to an unused experiments/exp-NNN-short-name.yaml; choose unique experiment/output IDs.
+# Use status: running and outputs: [] until checkpoints have evaluation results.
 # Rejected experiments are not recorded here: file the "Rejected experiment" issue instead.
 id: exp-NNN
 title: One-line objective
@@ -9,7 +11,7 @@ method: short-method-name
 code: {repo: example-org/training, commit: abc1234}   # GitHub repository (owner/name) and commit that produced the outputs
 inputs:                     # parent checkpoints, pinned exactly as registered
   - {model: parent-model-id, hf: {repo: example-org/parent, revision: abc1234}}
-  # souping: list every merged checkpoint and give each a `weight:` (weights sum to 1)
+  # souping: list at least two registered parents, each with a `weight:` (sum to 1)
 outputs: []
 #  - id: new-model-id
 #    hf: {repo: example-org/new-model-id, revision: abc1234}   # immutable commit; quote all-digit hashes
