@@ -29,8 +29,8 @@ nothing special: a soup is simply an experiment with several weighted parents.
 Not every idea works. A rejected experiment is not added to the registry; instead, its owner
 files the *Rejected experiment* issue form, recording the parents, checkpoints, scores and the
 reason, and closes it as not planned. The team keeps a searchable record of what has already been
-tried without cluttering the lineage. Two examples are kept as
-[issues](../../issues?q=is%3Aissue+label%3Arejected).
+tried without cluttering the lineage. Two examples are the rejected
+[learned-reward RLVR run](../../issues/1) and [uniform soup](../../issues/2).
 
 When a checkpoint becomes the team's reference model, someone changes the `main:` line in
 [`pipeline.yaml`](pipeline.yaml) in a reviewed pull request. That file also lists the pipeline
@@ -43,6 +43,19 @@ checkpoints with their scores. Ancestry comes only from the declared parents and
 from the order of the phases.
 
 ## An experiment record
+
+### Model soup
+
+A model soup combines compatible checkpoints by averaging their corresponding model parameters,
+producing one checkpoint for inference or further training. A weighted soup gives each input a
+chosen share of the average; for example, weights of 0.2, 0.4 and 0.4 mean that every parameter
+in the output is the same weighted sum of the corresponding input parameters. This differs from
+an ensemble, which runs multiple models and combines their predictions.
+
+The checkpoints need compatible architectures and aligned parameters, typically because they
+were fine-tuned from the same base. Averaging does not guarantee an improvement, so the merged
+checkpoint should be evaluated against its parents. The registry records the inputs and weights;
+the actual merge and evaluation happen outside this repository.
 
 The soup below merges three checkpoints from two parallel experiments into one:
 
