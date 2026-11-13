@@ -1,62 +1,18 @@
 # Lightweight model version control
 
 Modern AI model development usually involves several teams, each in charge of a different part
-of the work: supervised fine-tuning, preference optimisation, reinforcement learning, checkpoint
+of the work such as supervised fine-tuning, preference optimisation, reinforcement learning, checkpoint
 merging and evaluation. Keeping the metadata of such a project up to date is hard when it is
-scattered across notebooks, chats and spreadsheets. This repository is shared by all of those
+scattered across repositories, chats and spreadsheets. This repository is a template that can be shared by all of those
 teams to organise and keep track of the model's training, while adding as little documentation
 burden as possible to the development itself.
 
-This is a demo: every experiment, person, email address, organisation and revision in it is
-fictional, so the links do not resolve.
-
-## Start here
-
-You only need Python 3.12 and Git to try this demo. From the repository root:
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
-python scripts/registry.py --check
-```
-
-The last command validates the records and prints the generated lineage. Success means exit
-code 0 and a Markdown document starting with the pipeline title. Open [`LINEAGE.md`](LINEAGE.md)
-to browse the existing graph and checkpoint scores on GitHub.
-
-This repository tracks metadata. Training, uploading checkpoints to Hugging Face, model merging
-and evaluation happen in your own tools. No GPU, Hugging Face login or model download is needed
-to run this demo.
-
-To register your own run:
-
-1. Copy the template to an unused filename, for example:
-   `cp experiments/_template.yaml experiments/exp-011-my-rlvr.yaml`.
-2. Set a unique experiment `id` (for example `exp-011`), your `owner` details, the objective,
-   `phase`, and the training `code` repository and commit. Use `status: running` when the run
-   starts and leave `outputs: []` until you have evaluated checkpoints.
-3. Choose a parent from the checkpoint table in [`LINEAGE.md`](LINEAGE.md). Copy its model ID,
-   Hugging Face repository and exact revision into `inputs`; all three must match the registry.
-4. Run `python scripts/registry.py --check`, commit your YAML file and open a pull request.
-   CI validates it and shows a lineage preview in the Actions job summary. After merge, the
-   workflow updates `LINEAGE.md`.
-5. When results are ready, update the same YAML file with the output checkpoint, evaluation
-   commit and every benchmark score. Give each checkpoint a unique ID. Set `status: accepted`
-   if the team keeps the result, validate again and submit the update through a pull request.
-
-Use immutable commit hashes for code and model revisions; quote hashes containing only digits
-so YAML preserves leading zeros. `code.repo` uses GitHub's `owner/name` format. `eval.commit`
-identifies the version of the shared evaluation code in `pipeline.yaml` that produced the scores.
-The benchmark names must match that file's `benchmarks` list.
-
-The two examples below are **existing records**: read or edit them in place to explore the demo.
-Copying them into another file unchanged will fail validation because their IDs already exist.
+In this example, we provide a demo with a Reinforcement Learning with Verifiable Rewards (RLVR) experiment.
 
 ## Example 1: a simple RLVR run — one parent, one output
 
-RLVR means reinforcement learning with verifiable rewards: the training reward comes from a
-checkable result, such as an exact answer match or passing unit tests. In
+We will start with a simple example, an experiment that starts from a previous checkpoint (e.g., the output of a previous post training phase like DPO) and produces a single output checkpoint. When a new researcher checks this experiment there are 
+In
 [`experiments/exp-005-rlvr-b.yaml`](experiments/exp-005-rlvr-b.yaml), a researcher starts from
 `dpo-v1`, trains with exact-match rewards, and registers one evaluated checkpoint, `rlvr-b-v1`.
 
@@ -71,7 +27,7 @@ phase: rlvr
 owner: {name: Researcher B, email: researcher-b@example.org, github: researcher-b}
 status: accepted
 method: rlvr
-code: {repo: example-org/training, commit: 5e0f7a9}
+code: {repo: example-org/training, commit: 5e0f7a9, config: configs/exp-b.yaml}
 inputs:
   - {model: dpo-v1, hf: {repo: example-org/dpo-v1, revision: 7b4a2d9}}
 outputs:
