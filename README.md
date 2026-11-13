@@ -5,16 +5,29 @@ of the work such as supervised fine-tuning, preference optimisation, reinforceme
 merging and evaluation. Keeping the metadata of such a project up to date is hard when it is
 scattered across repositories, chats and spreadsheets. This repository is a template that can be shared by all of those
 teams to organise and keep track of the model's training, while adding as little documentation
-burden as possible to the development itself.
+burden as possible to the development itself. It also provides an automatic github workflow that renders [complete]
 
 In this example, we provide a demo with a Reinforcement Learning with Verifiable Rewards (RLVR) experiment.
 
 ## Example 1: a simple RLVR run — one parent, one output
 
-We will start with a simple example, an experiment that starts from a previous checkpoint (e.g., the output of a previous post training phase like DPO) and produces a single output checkpoint. When a new researcher checks this experiment there are 
-In
-[`experiments/exp-005-rlvr-b.yaml`](experiments/exp-005-rlvr-b.yaml), a researcher starts from
-`dpo-v1`, trains with exact-match rewards, and registers one evaluated checkpoint, `rlvr-b-v1`.
+We will start with a simple example, an experiment that starts from a previous checkpoint (e.g., the output of a previous post training phase like DPO) and produces a single output checkpoint. 
+From a reproducibility point of there are 3 points that another researcher would like to know:
+1. **Code**: Where to find the code (i.e., link to repository), what version of it was used (i.e., commit) and, which config (e.g., cli parameters, YAML config file) was used.
+2. **Initialisation:** What checkpoint did the experiment start from or how where weights initialised. For this we can point either to a huggingface repo (for a checkpoint) or leave it empty to assume the code will specify the initialisation.
+3. **Output:** Where to find the output, that is a huggingface reposiroty and revision. Moreover, how well it performed in the evaluation? This is useful to keep track of the progress.
+
+
+In addition, some useful metadata includes:
+1. **Owner:** Who can I reach out regarding this experiment?
+2. **Title and description:** Short title and description for distinguish them.
+3. **tags:** Any tags usegul for filtering like the phase (RLVR, SFT, etc...)
+4. **beginning and ending dates**
+5. **status**: In progress, acepted, rejected.
+
+
+[`experiments/exp-005-rlvr-b.yaml`](experiments/exp-005-rlvr-b.yaml) provides an example, a researcher starts from
+`dpo-v1`, trains with RLVR, and registers one evaluated checkpoint, `rlvr-b-v1`.
 
 ```text
 dpo-v1 → exp-005 (RLVR) → rlvr-b-v1
@@ -23,10 +36,8 @@ dpo-v1 → exp-005 (RLVR) → rlvr-b-v1
 ```yaml
 id: exp-005
 title: RLVR with exact-match rewards
-phase: rlvr
 owner: {name: Researcher B, email: researcher-b@example.org, github: researcher-b}
 status: accepted
-method: rlvr
 code: {repo: example-org/training, commit: 5e0f7a9, config: configs/exp-b.yaml}
 inputs:
   - {model: dpo-v1, hf: {repo: example-org/dpo-v1, revision: 7b4a2d9}}
@@ -37,10 +48,9 @@ outputs:
     scores: {math: 0.589, code: 0.441, chat: 7.5, safety: 0.941}
 ```
 
-`inputs` answers “which checkpoint did I start from?” and `outputs` answers “which checkpoints
-did this run produce?” The experiment ID identifies the run; a model ID identifies a particular
-checkpoint. One run can also produce several checkpoints: the parallel RLVR run
-[`exp-004`](experiments/exp-004-rlvr-a.yaml) records both `rlvr-a-v1` and `rlvr-a-v2`.
+We might run several instances of this experiment, for example changing the seed [example of other config with link]. Moreover, we might want to discard some expeirments but still record what was done, this can be done by filling an issue such as [example of issue] indicating why it is discarde for other researchers.
+
+However, modern AI development usually involves weight aggrgation tehcniques such as souping, the next example shows how to handle them.
 
 ## Example 2: a model soup — several parents, one output
 
