@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parent.parent
 STATUSES = ("planned", "running", "paused", "accepted", "inconclusive")
 IN_PROGRESS = ("planned", "running", "paused")
 REQUIRED = ("id", "title", "phase", "owner", "status", "code", "inputs")
-REJECTED_ISSUES = "../../issues?q=is%3Aissue+label%3Arejected"
+REJECTED_ISSUES = "https://github.com/alobo01/lightweight-model-version-control/issues?q=is%3Aissue+is%3Aclosed+label%3Arejected"
 
 
 def load(root: Path = ROOT) -> tuple[dict, list[dict]]:

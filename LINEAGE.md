@@ -88,4 +88,4 @@ Scores produced by [`example-org/evaluation`](https://github.com/example-org/eva
 
 ## Rejected experiments
 
-Rejected work is kept as [closed issues labelled `rejected`](../../issues?q=is%3Aissue+label%3Arejected), with its parents, checkpoints, scores and the reason it was dropped.
+Rejected work is kept as [closed issues labelled `rejected`](https://github.com/alobo01/lightweight-model-version-control/issues?q=is%3Aissue+is%3Aclosed+label%3Arejected), with its parents, checkpoints, scores and the reason it was dropped.

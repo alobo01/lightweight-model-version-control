@@ -30,7 +30,8 @@ Not every idea works. A rejected experiment is not added to the registry; instea
 files the *Rejected experiment* issue form, recording the parents, checkpoints, scores and the
 reason, and closes it as not planned. The team keeps a searchable record of what has already been
 tried without cluttering the lineage. Two examples are the rejected
-[learned-reward RLVR run](../../issues/1) and [uniform soup](../../issues/2).
+[learned-reward RLVR run](https://github.com/alobo01/lightweight-model-version-control/issues/1)
+and [uniform soup](https://github.com/alobo01/lightweight-model-version-control/issues/2).
 
 When a checkpoint becomes the team's reference model, someone changes the `main:` line in
 [`pipeline.yaml`](pipeline.yaml) in a reviewed pull request. That file also lists the pipeline
