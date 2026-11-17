@@ -1,0 +1,14 @@
+id: exp-014
+title: Unit-test reward ablation
+description: Measure the contribution of reward shaping by continuing rlvr-a-v2 with binary unit-test rewards.
+tags: [rlvr, ablation, code]
+owner: {name: Researcher A, email: researcher-a@example.org, github: researcher-a}
+status: in_progress
+method: rlvr
+code: {repo: example-org/training, commit: b3d8f50}
+config:
+  cli: "--reward binary-unit-tests --seed 13"
+inputs:
+  - {model: rlvr-a-v2, hf: {repo: example-org/rlvr-a, revision: 8c2e4f6}}
+outputs: []
+notes: Awaiting a fix for flaky unit tests before producing an evaluated checkpoint.

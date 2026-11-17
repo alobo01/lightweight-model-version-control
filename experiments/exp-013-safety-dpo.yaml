@@ -1,0 +1,15 @@
+id: exp-013
+title: Safety-focused preference optimisation
+description: Improve refusal behaviour by applying safety preference optimisation to the final RLHF checkpoint.
+tags: [dpo, safety]
+owner: {name: Researcher B, email: researcher-b@example.org, github: researcher-b}
+status: in_progress
+method: dpo
+code: {repo: example-org/training, commit: a2c7e49}
+config:
+  file: configs/safety-dpo.yaml
+  cli: "--seed 7"
+inputs:
+  - {model: rlhf2-v1, hf: {repo: example-org/rlhf2-v1, revision: 1e6c8b4}}
+outputs: []
+notes: Dataset review is scheduled before training begins.

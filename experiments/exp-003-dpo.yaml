@@ -1,6 +1,6 @@
 id: exp-003
 title: Preference optimisation on curated pairs
-phase: dpo
+tags: [dpo]                 # optional, free-form labels
 owner: {name: Researcher A, email: researcher-a@example.org, github: researcher-a}
 status: accepted
 method: dpo
@@ -10,5 +10,5 @@ inputs:
 outputs:
   - id: dpo-v1
     hf: {repo: example-org/dpo-v1, revision: 7b4a2d9}
-    eval: {commit: d41e7aa}
+    eval: {repo: example-org/evaluation, commit: d41e7aa}
     scores: {math: 0.455, code: 0.418, chat: 7.6, safety: 0.944}

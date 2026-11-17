@@ -1,10 +1,18 @@
 id: exp-010
 title: RLVR with a longer task horizon
-phase: rlvr
+description: Test whether longer reasoning trajectories improve accuracy by extending the RLVR task horizon.
+tags: [rlvr, reasoning]
 owner: {name: Researcher C, email: researcher-c@example.org, github: researcher-c}
-status: running
+status: in_progress
 method: rlvr
 code: {repo: example-org/training, commit: 9c4d1e3}
+config:
+  cli: "--max-steps 2000 --task-horizon 4096 --seed 42"
 inputs:
   - {model: dpo-v1, hf: {repo: example-org/dpo-v1, revision: 7b4a2d9}}
-outputs: []
+outputs:
+  - id: rlvr-d-v1
+    hf: {repo: example-org/rlvr-d, revision: 3a6d8e1}
+    eval: {repo: example-org/evaluation, commit: d41e7aa}
+    scores: {math: 0.573, code: 0.432}
+notes: Training continues after this intermediate checkpoint; chat and safety evaluations are pending.

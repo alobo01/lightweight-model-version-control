@@ -1,6 +1,6 @@
 id: exp-008
 title: Final RLHF alignment round
-phase: rlhf2
+tags: [rlhf2]                 # optional, free-form labels
 owner: {name: Researcher B, email: researcher-b@example.org, github: researcher-b}
 status: accepted
 method: rlhf
@@ -10,5 +10,5 @@ inputs:
 outputs:
   - id: rlhf2-v1
     hf: {repo: example-org/rlhf2-v1, revision: 1e6c8b4}
-    eval: {commit: d41e7aa}
+    eval: {repo: example-org/evaluation, commit: d41e7aa}
     scores: {math: 0.619, code: 0.553, chat: 8.2, safety: 0.963}

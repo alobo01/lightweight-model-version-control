@@ -1,9 +1,12 @@
 name: registry
 
-on:
+"on":
   pull_request:
   push:
-    branches: [main]
+
+concurrency:
+  group: registry-${{ github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -19,17 +22,32 @@ jobs:
       - run: pip install -r requirements.txt
       - run: pytest -q
 
-      - name: Validate and preview lineage
+      - name: Validate registry
+        run: python scripts/registry.py --check > "$RUNNER_TEMP/lineage.md"
+
+      - name: Preview lineage
         if: github.event_name == 'pull_request'
-        run: python scripts/registry.py --check >> "$GITHUB_STEP_SUMMARY"
+        run: cat "$RUNNER_TEMP/lineage.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Read project configuration
+        id: config
+        run: |
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import yaml
+          from pathlib import Path
+          config = yaml.safe_load(Path("config.yaml").read_text())
+          print(f"main_branch={config['main_branch']}")
+          PY
 
       - name: Regenerate LINEAGE.md
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' && github.ref == format('refs/heads/{0}', steps.config.outputs.main_branch)
+        env:
+          MAIN_BRANCH: ${{ steps.config.outputs.main_branch }}
         run: |
           python scripts/registry.py
           if ! git diff --quiet -- LINEAGE.md; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git commit -m "Regenerate LINEAGE.md" -- LINEAGE.md
-            git push
+            git push origin "HEAD:refs/heads/$MAIN_BRANCH"
           fi

@@ -1,0 +1,30 @@
+# Copy to rejected/exp-NNN-short-name.yaml to record a rejected experiment.
+# Or move an existing experiment here, preserving its ID and metadata.
+# Keep outputs: [] if no evaluated checkpoints were produced.
+# Rejected files are validated and linked separately from the active lineage.
+id: exp-NNN
+title: Short experiment name
+description: One sentence explaining why the experiment is run and what it will do.
+tags: [rlvr]                 # optional, free-form labels
+owner: {name: Your Name, email: you@example.org, github: your-github-handle}
+status: rejected
+method: short-method-name
+code: {repo: example-org/training, commit: abc1234}   # GitHub repository (owner/name) and commit that produced the outputs
+# Record the configuration needed to reproduce the run, for example:
+# config:
+#   file: configs/my-experiment.yaml  # path at the pinned code commit
+#   cli: "--seed 42 --learning-rate 1e-6"  # file, cli, or both
+inputs:                     # parent checkpoints, pinned by repository and revision
+  - {model: parent-model-id, hf: {repo: example-org/parent, revision: abc1234}}
+  # Inputs without a producing experiment are external checkpoints.
+  # Optional eval and scores on external inputs record baseline evaluations.
+  # For weight aggregation, set method and list all input checkpoints, for example:
+  # - {model: other-model, hf: {repo: example-org/other, revision: def5678}, parameters: {weight: 0.2}}
+  # parameters is an optional dictionary of method-specific input metadata.
+outputs: []
+#  - id: new-model-id
+#    hf: {repo: example-org/new-model-id, revision: abc1234}   # immutable commit; quote all-digit hashes
+#    eval: {repo: example-org/evaluation, commit: abc1234}  # evaluation code that produced the scores
+#    scores: {math: 0.0, code: 0.0, chat: 0.0, safety: 0.0}
+reject_reason: Explain why this experiment was rejected.
+# notes: optional additional context

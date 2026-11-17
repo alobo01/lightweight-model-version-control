@@ -1,0 +1,18 @@
+id: exp-009
+title: RLVR with learned rewards
+description: Test whether a learned reward model improves reasoning compared with exact-match verification.
+tags: [rlvr, reasoning]
+owner: {name: Researcher C, email: researcher-c@example.org, github: researcher-c}
+status: rejected
+method: rlvr
+code: {repo: example-org/training, commit: 8b2e4a6}
+config:
+  file: configs/learned-reward.yaml
+inputs:
+  - {model: dpo-v1, hf: {repo: example-org/dpo-v1, revision: 7b4a2d9}}
+outputs:
+  - id: rlvr-c-v1
+    hf: {repo: example-org/rlvr-c, revision: 5a9d1f3}
+    eval: {repo: example-org/evaluation, commit: d41e7aa}
+    scores: {math: 0.401, code: 0.430, chat: 7.7, safety: 0.889}
+reject_reason: Math accuracy and safety regressed relative to dpo-v1 despite small code and chat gains.

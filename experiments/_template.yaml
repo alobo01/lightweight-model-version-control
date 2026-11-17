@@ -1,20 +1,29 @@
-# Start with README.md examples: one-parent RLVR, then a multi-parent soup.
+# Start with README.md examples: one-parent RLVR, then multi-parent weight aggregation.
 # Copy to an unused experiments/exp-NNN-short-name.yaml; choose unique experiment/output IDs.
-# Use status: running and outputs: [] until checkpoints have evaluation results.
-# Rejected experiments are not recorded here: file the "Rejected experiment" issue instead.
+# Use status: in_progress and outputs: [] until checkpoints have evaluation results.
+# To reject an experiment, move its YAML to rejected/, set status: rejected and add reject_reason.
 id: exp-NNN
-title: One-line objective
-phase: rlvr                 # a phase id from pipeline.yaml
+title: Short experiment name
+description: One sentence explaining why the experiment is run and what it will do.
+tags: [rlvr]                 # optional, free-form labels
 owner: {name: Your Name, email: you@example.org, github: your-github-handle}
-status: planned             # planned | running | paused | accepted | inconclusive
+status: in_progress             # in_progress | accepted | rejected (in rejected/)
 method: short-method-name
 code: {repo: example-org/training, commit: abc1234}   # GitHub repository (owner/name) and commit that produced the outputs
-inputs:                     # parent checkpoints, pinned exactly as registered
+# Record the configuration needed to reproduce the run, for example:
+# config:
+#   file: configs/my-experiment.yaml  # path at the pinned code commit
+#   cli: "--seed 42 --learning-rate 1e-6"  # file, cli, or both
+inputs:                     # parent checkpoints, pinned by repository and revision
   - {model: parent-model-id, hf: {repo: example-org/parent, revision: abc1234}}
-  # souping: list at least two registered parents, each with a `weight:` (sum to 1)
+  # Inputs without a producing experiment are external checkpoints.
+  # Optional eval and scores on external inputs record baseline evaluations.
+  # For weight aggregation, set method and list all input checkpoints, for example:
+  # - {model: other-model, hf: {repo: example-org/other, revision: def5678}, parameters: {weight: 0.2}}
+  # parameters is an optional dictionary of method-specific input metadata.
 outputs: []
 #  - id: new-model-id
 #    hf: {repo: example-org/new-model-id, revision: abc1234}   # immutable commit; quote all-digit hashes
-#    eval: {commit: abc1234}          # evaluation-repository commit that produced the scores
+#    eval: {repo: example-org/evaluation, commit: abc1234}  # evaluation code that produced the scores
 #    scores: {math: 0.0, code: 0.0, chat: 0.0, safety: 0.0}
 # notes: optional free text

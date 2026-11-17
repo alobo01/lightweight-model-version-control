@@ -1,0 +1,18 @@
+id: exp-012
+title: Uniform soup of three RLVR checkpoints
+description: Check whether equal averaging matches the weighted soup using the same code and reasoning checkpoints.
+tags: [weight_aggregation, souping, ablation]
+owner: {name: Researcher A, email: researcher-a@example.org, github: researcher-a}
+status: rejected
+method: weighted_average
+code: {repo: example-org/merging, commit: 8f3a21c}
+inputs:
+  - {model: rlvr-a-v1, hf: {repo: example-org/rlvr-a, revision: 6a1c3e5}, parameters: {weight: 0.3333333333333333}}
+  - {model: rlvr-a-v2, hf: {repo: example-org/rlvr-a, revision: 8c2e4f6}, parameters: {weight: 0.3333333333333333}}
+  - {model: rlvr-b-v1, hf: {repo: example-org/rlvr-b, revision: 2f5b8d1}, parameters: {weight: 0.3333333333333333}}
+outputs:
+  - id: soup-uniform-v1
+    hf: {repo: example-org/soup-uniform, revision: 6d2f8a4}
+    eval: {repo: example-org/evaluation, commit: d41e7aa}
+    scores: {math: 0.556, code: 0.491, chat: 7.3, safety: 0.934}
+reject_reason: The weighted soup scored higher on all four benchmarks, so the equal-weight alternative was rejected.

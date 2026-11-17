@@ -1,6 +1,6 @@
 id: exp-007
 title: OPSD on the merged checkpoint
-phase: opsd
+tags: [opsd]                 # optional, free-form labels
 owner: {name: Researcher C, email: researcher-c@example.org, github: researcher-c}
 status: accepted
 method: opsd
@@ -10,5 +10,5 @@ inputs:
 outputs:
   - id: opsd-v1
     hf: {repo: example-org/opsd-v1, revision: 3d7f9a2}
-    eval: {commit: d41e7aa}
+    eval: {repo: example-org/evaluation, commit: d41e7aa}
     scores: {math: 0.624, code: 0.556, chat: 7.8, safety: 0.948}
