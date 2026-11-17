@@ -1,17 +1,27 @@
 # GitHub CI/CD
 
 The [registry workflow](../.github/workflows/registry.yml) validates experiment metadata and publishes
-[`LINEAGE.md`](../LINEAGE.md). Its project settings come from [`config.yaml`](../config.yaml):
+[`LINEAGE.md`](../LINEAGE.md) and [`LINEAGE.html`](../LINEAGE.html). Its project settings come from [`config.yaml`](../config.yaml):
 `project_name` titles the document and `main_branch` selects the Git branch used for publication.
 
 1. **Pull requests:** Install the Python dependencies, run the tests and validate the active and
-   rejected YAML records. Show the generated lineage in the workflow's GitHub Actions summary.
+   rejected YAML records. Show the Markdown lineage in the workflow's GitHub Actions summary
+   and upload an HTML preview with its source records as the **lineage-preview** artifact.
    Invalid metadata or failing tests fail the check.
 2. **Pushes:** Run the same checks on every branch. On `main_branch`, regenerate `LINEAGE.md`
-   and commit and push it if its contents changed. Other branches run checks without publishing.
+   and `LINEAGE.html`, then commit and push changed outputs. Other branches run checks without publishing.
 3. **Rejected experiments:** Validate records in `rejected/` with `status: rejected` and link
    them in a separate section. Show their branches with red arrows in the overview and exclude
    their checkpoints from the active tables.
+
+## Opening the HTML view
+
+Open `LINEAGE.html` in a browser from a local checkout. For a pull request, open its GitHub Actions
+run, download **lineage-preview** under **Artifacts**, extract the ZIP and open `LINEAGE.html`.
+The HTML embeds its styles, JavaScript, SVG graph and experiment data, so it works offline.
+It supports zoom and pan, SVG download, experiment search and status filters. Selecting an
+experiment in the graph opens its record. Both views use three-decimal weights in diagram labels.
+GitHub's repository file view shows HTML source; the artifact can be opened locally.
 
 ## What validation checks
 
@@ -59,5 +69,5 @@ Run these commands from the repository root:
 pip install -r requirements.txt
 pytest -q
 python scripts/registry.py --check  # validate and print without writing
-python scripts/registry.py          # validate and regenerate LINEAGE.md
+python scripts/registry.py          # validate and regenerate both lineage views
 ```

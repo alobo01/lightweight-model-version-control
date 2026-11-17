@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Alignment training pipeline (demo) · Model lineage</title>
+<style>
+:root{--ink:#173342;--muted:#617584;--line:#dfe7e9;--surface:#fff;--green:#168654;--red:#d34a4a;--slate:#64748b;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:#f4f7f7;font-synthesis:none}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0}a{color:#166c73;text-decoration:none}a:hover{text-decoration:underline}button,input,select{font:inherit}button,select{cursor:pointer}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible,.graph-node:focus-visible{outline:3px solid #0d9488;outline-offset:4px}button{border:1px solid var(--line);background:white;color:var(--ink);border-radius:9px;padding:9px 14px}button:hover{background:#edf5f3}button:disabled{opacity:.45;cursor:default}[hidden]{display:none!important}
+.shell{max-width:1560px;margin:auto;padding:0 40px}.topbar{border-bottom:1px solid var(--line);background:#ffffffd9}.topbar .shell{display:flex;align-items:center;justify-content:space-between;min-height:74px;gap:20px}.brand{display:flex;align-items:center;gap:12px;font-size:13px;letter-spacing:.06em;font-weight:750;text-transform:uppercase}.brand-icon{display:grid;place-items:center;background:#173e42;color:white;width:34px;height:34px;border-radius:11px;font-size:20px}nav{display:flex;gap:24px;font-size:13px}nav a{color:var(--muted)}.hero{padding:48px 0 26px}.eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.16em;font-weight:750;color:#39777a;display:flex;align-items:center;gap:8px}.eyebrow:before{content:"";width:7px;height:7px;background:#24a278;border-radius:50%}h1{font-size:clamp(30px,3.5vw,49px);line-height:1.12;letter-spacing:-.045em;font-weight:650;margin:14px 0 15px;max-width:1100px}.hero-bottom{display:flex;align-items:center;justify-content:space-between;gap:20px}.hero p{margin:0;color:var(--muted);font-size:15px;line-height:1.7}.branch{font-size:12px;border:1px solid var(--line);border-radius:7px;padding:8px 12px;background:#fff;white-space:nowrap}.branch b{font-family:ui-monospace,monospace;font-weight:500;margin-left:8px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:10px 0 30px}.stat{background:var(--surface);border:1px solid var(--line);border-radius:15px;padding:22px 24px;position:relative;overflow:hidden}.stat:after{content:"";position:absolute;width:60px;height:60px;border-radius:50%;right:-18px;bottom:-22px;background:#edf5f2}.stat-label{display:flex;align-items:center;gap:9px;color:var(--muted);font-size:12px}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green)}.dot.rejected{background:var(--red)}.dot.in_progress{background:var(--slate)}.stat strong{display:block;font-size:36px;letter-spacing:-.04em;font-weight:650;margin:9px 0 2px}.stat small{color:var(--muted);font-size:11px}
+.panel{border:1px solid var(--line);border-radius:18px;background:white;overflow:hidden;box-shadow:0 4px 20px #183a4004}.panel-head{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:22px 26px;border-bottom:1px solid var(--line)}h2{margin:0;font-size:18px;font-weight:650;letter-spacing:-.025em}.subtitle{font-size:12px;color:var(--muted);margin:7px 0 0;line-height:1.6}.status-key{display:flex;gap:20px;font-size:11px;color:var(--muted);flex-wrap:wrap}.status-key span{display:flex;align-items:center;gap:7px}.arrow-key{width:27px;border-top:2px solid var(--green);position:relative}.arrow-key:after{position:absolute;content:"";right:-1px;top:-4px;border-left:5px solid var(--green);border-top:3px solid transparent;border-bottom:3px solid transparent}.arrow-key.red{border-color:var(--red)}.arrow-key.red:after{border-left-color:var(--red)}.arrow-key.dashed{border-top:2px dashed var(--slate)}.arrow-key.dashed:after{border-left-color:var(--slate)}
+.graph-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 24px;background:#fff}.graph-toolbar .tools{display:flex;align-items:center;gap:7px}.graph-toolbar button{font-size:12px;padding:7px 12px}.zoom-label{font-size:11px;color:var(--muted);width:43px;text-align:center;font-variant-numeric:tabular-nums}.hint{font-size:11px;color:var(--muted)}.graph-stage{height:620px;position:relative;overflow:hidden;background-color:#f8fafc;background-image:radial-gradient(#d4dfe5 .8px,transparent .8px);background-size:20px 20px;border-top:1px solid #edf1f3;border-bottom:1px solid var(--line);touch-action:none;cursor:grab}.graph-stage.dragging{cursor:grabbing}.graph-stage svg{display:block;width:100%;height:100%}.graph-node[data-record]{cursor:pointer}.graph-node[data-record]:hover rect,.graph-node:focus-visible rect{stroke-width:3;filter:drop-shadow(0 4px 5px #17334216)}.tags-footer{display:flex;gap:16px;align-items:flex-start;padding:18px 24px}.tags-footer>span{font-size:11px;font-weight:650;color:var(--muted);padding-top:5px;white-space:nowrap}.tags{display:flex;flex-wrap:wrap;gap:6px}.tag{display:inline-flex;align-items:center;gap:5px;border-radius:6px;padding:4px 8px;font-size:10px;line-height:1.5;background:var(--tag-fill);color:var(--tag-ink);font-weight:550}.tag:before{content:"";width:4px;height:4px;background:currentColor;border-radius:50%}
+.section-head{display:flex;justify-content:space-between;gap:16px;align-items:end;margin:42px 0 18px}.section-kicker{font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:7px}.filters{display:flex;gap:9px;align-items:center}.filters input,.filters select{border:1px solid var(--line);background:white;padding:10px 12px;border-radius:9px;font-size:12px;color:var(--ink)}.filters input{min-width:260px}.record-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:start}.record{border:1px solid var(--line);border-radius:14px;background:white;overflow:hidden}.record summary{list-style:none;padding:21px 22px;cursor:pointer}.record summary::-webkit-details-marker{display:none}.record summary:hover{background:#fbfdfd}.record-top{display:flex;align-items:center;justify-content:space-between;gap:8px}.record-id{font-size:11px;font-family:ui-monospace,monospace;color:var(--muted)}.badge{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:5px;font-size:10px;font-weight:600;text-transform:capitalize;white-space:nowrap}.badge.accepted{color:#127349;background:#eaf7ef}.badge.rejected{color:#b94242;background:#fff0ef}.badge.in_progress{color:#52657b;background:#edf2f7}.badge:before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor}.record h3{font-size:17px;font-weight:600;line-height:1.4;letter-spacing:-.02em;margin:16px 0 9px}.record-description{font-size:12px;line-height:1.7;color:var(--muted);margin:0 0 15px;min-height:40px}.inspect{display:flex;justify-content:space-between;font-size:11px;color:#43817c;margin-top:20px}.record[open]{box-shadow:0 8px 24px #1b424208;border-color:#b8d5d0}.record-body{border-top:1px solid var(--line);padding:18px 22px;font-size:12px;line-height:1.7;overflow-wrap:anywhere}.record-body dl{margin:0}.record-body dt{color:var(--muted);font-size:10px;font-weight:650;text-transform:uppercase;letter-spacing:.06em;margin-top:12px}.record-body dd{margin:3px 0 0}.record-body h4{font-size:11px;margin:20px 0 7px}.checkpoints{list-style:none;margin:0;padding:0}.checkpoints li+li{margin-top:9px}.checkpoints small{display:block;color:var(--muted)}.mono,code{font-family:ui-monospace,monospace;font-size:10px}.source-link{display:block;margin-top:18px;font-size:11px}.reject-reason{background:#fff3f1;border-left:2px solid #dd7272;border-radius:0 7px 7px 0;padding:12px;margin-bottom:15px;font-size:11px}.reject-reason strong{color:#aa3b3b;font-size:10px}.reject-reason p{margin:5px 0 0}.record-notes{color:var(--muted);margin-top:16px}.muted{color:var(--muted)}.result-count{font-size:11px;color:var(--muted);margin-bottom:12px}.empty{background:white;padding:32px;border:1px dashed var(--line);border-radius:12px;color:var(--muted);font-size:13px}
+.table-scroll{overflow-x:auto}table{border-collapse:collapse;width:100%;text-align:left;font-size:12px;white-space:nowrap}th,td{padding:16px 20px;border-bottom:1px solid #edf1f2}thead th{background:#f8fafb;font-size:10px;letter-spacing:.04em;font-weight:650;color:var(--muted)}tbody th{font-weight:500}tbody tr:hover{background:#f9fcfb}tbody tr:last-child>*{border-bottom:0}.numeric{text-align:right;font-variant-numeric:tabular-nums}.table-note{font-size:11px;color:var(--muted);padding:15px 22px;border-top:1px solid var(--line)}footer{display:flex;justify-content:space-between;gap:20px;padding:34px 0;color:var(--muted);font-size:11px;line-height:1.8}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}noscript p{padding:16px;background:#fff4da;color:#72531e}
+@media(max-width:1000px){.record-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.shell{padding:0 24px}.panel-head{align-items:flex-start;flex-direction:column}.section-head{align-items:flex-start;flex-direction:column}}
+@media(max-width:640px){.shell{padding:0 16px}.topbar .shell{min-height:62px}nav{gap:12px;font-size:11px}.brand{font-size:10px}.hero{padding-top:30px}.hero-bottom{align-items:flex-start;flex-direction:column}.stats{grid-template-columns:repeat(2,1fr);gap:10px}.stat{padding:16px}.stat strong{font-size:28px}.record-grid{grid-template-columns:1fr}.filters{flex-wrap:wrap;width:100%}.filters input{min-width:0;flex:1}.graph-stage{height:480px}.graph-toolbar{padding:12px}.hint{display:none}.tags-footer{padding:16px;flex-direction:column;gap:8px}footer{flex-direction:column;gap:8px}.status-key{gap:12px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<header class="topbar"><div class="shell"><a class="brand" href="#top"><span class="brand-icon" aria-hidden="true">⌘</span> Model registry</a><nav aria-label="Main navigation"><a href="#lineage">Lineage</a><a href="#experiments">Experiments</a><a href="#checkpoints">Checkpoints</a><a href="LINEAGE.md">Markdown ↗</a></nav></div></header>
+<main class="shell" id="top">
+<section class="hero"><div class="eyebrow">A shared view of model development</div><h1>Alignment training pipeline (demo)</h1><div class="hero-bottom"><p>Trace every checkpoint. Compare the experiments.<br>Keep the decisions that shaped the model.</p><span class="branch">Main branch <b>main</b></span></div></section>
+<section class="stats" aria-label="Registry summary"><article class="stat"><div class="stat-label"><i class="dot" aria-hidden="true"></i>Accepted</div><strong>8</strong><small>Experiments retained</small></article><article class="stat"><div class="stat-label"><i class="dot in_progress" aria-hidden="true"></i>In progress</div><strong>3</strong><small>Work being explored</small></article><article class="stat"><div class="stat-label"><i class="dot rejected" aria-hidden="true"></i>Rejected</div><strong>2</strong><small>Decisions documented</small></article><article class="stat"><div class="stat-label">Registered checkpoints</div><strong>11</strong><small>Active outputs and external inputs</small></article></section>
+<section class="panel" id="lineage" aria-labelledby="lineage-heading"><div class="panel-head"><div><h2 id="lineage-heading">The lineage</h2><p class="subtitle">Checkpoints connect the experiments. Select an experiment to inspect its record.</p></div><div class="status-key" aria-label="Arrow status legend"><span><i class="arrow-key" aria-hidden="true"></i>Accepted</span><span><i class="arrow-key red" aria-hidden="true"></i>Rejected</span><span><i class="arrow-key dashed" aria-hidden="true"></i>In progress</span></div></div>
+<div class="graph-toolbar"><div class="tools"><button id="zoom-out" aria-label="Zoom out">−</button><output id="zoom-label" class="zoom-label" aria-live="polite">100%</output><button id="zoom-in" aria-label="Zoom in">+</button><button id="fit-graph">Fit</button><button id="reset-graph">100%</button></div><span class="hint">Drag to pan · scroll to zoom</span><button id="download-svg">Download SVG ↗</button></div>
+<div class="graph-stage" id="graph-stage" tabindex="0" aria-label="Interactive lineage. Use arrow keys to pan, plus or minus to zoom, and zero to fit."><svg id="lineage-graph" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6140 1050" data-width="6140" data-height="1050" role="img" aria-labelledby="graph-title graph-description">
+<title id="graph-title">Experiment lineage</title>
+<desc id="graph-description">Nodes show checkpoints and experiments. Green arrows are accepted, red rejected, and dashed arrows in progress. Select an experiment to inspect its record.</desc>
+<defs>
+<marker id="arrow-accepted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#168654"/></marker>
+<marker id="arrow-rejected" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#d34a4a"/></marker>
+<marker id="arrow-in_progress" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/></marker>
+</defs>
+<g id="graph-content" font-family="system-ui, sans-serif">
+<path class="graph-edge" data-status="accepted" d="M320,502.0 C370.0,502.0 370.0,502.0 420,502.0" stroke="#168654" stroke-width="3" fill="none" marker-end="url(#arrow-accepted)"/>
+<path class="graph-edge" data-status="accepted" d="M700,502.0 C750.0,502.0 750.0,502.0 800,502.0" stroke="#168654" stroke-width="3" fill="none" marker-end="url(#arrow-accepted)"/>
+<path class="graph-edge" data-status="accepted" d="M1080,502.0 C1130.0,502.0 1130.0,502.0 1180,502.0" stroke="#168654" stroke-width="3" fill="none" marker-end="url(#arrow-accepted)"/>
+<path class="graph-edge" data-status="accepted" d="M1460,502.0 C1510.0,502.0 1510.0,502.0 1560,502.0" stroke="#168654" stroke-width="3" fill="none" marker-end="url(#arrow-accepted)"/>
+<path class="graph-edge" data-status="accepted" d="M1840,502.0 C1890.0,502.0 1890.0,502.0 1940,502.0" stroke="#168654" stroke-width="3" fill="none" marker-end="url(#arrow-accepted)"/>
+<path class="graph-edge" data-status="accepted" d="M2220,502.0 C2270.0,502.0 2270.0,502.0 2320,502.0" stroke="#168654" stroke-width="3" fill="none" marker-end="url(#arrow-accepted)"/>
+<path class="graph-edge" data-status="accepted" d="M2600,502.0 C2650.0,502.0 2650.0,217.0 2700,217.0" stroke="#168654" stroke-width="3" fill="none" marker-end="url(#arrow-accepted)"/>
+<path class="graph-edge" data-status="accepted" d="M2980,217.0 C3030.0,217.0 3030.0,122.0 3080,122.0" stroke="#168654" stroke-width="3" fill="none" marker-end="url(#arrow-accepted)"/>
+<path class="graph-edge" data-status="accepted" d="M2980,217.0 C3030.0,217.0 3030.0,312.0 3080,312.0" stroke="#168654" stroke-width="3" fill="none" marker-end="url(#arrow-accepted)"/>
+<path class="graph-edge" data-status="accepted" d="M2600,502.0 C2650.0,502.0 2650.0,407.0 2700,407.0" stroke="#168654" stroke-width="3" fill="none" marker-end="url(#arrow-accepted)"/>
+<path class="graph-edge" data-status="accepted" d="M2980,407.0 C3030.0,407.0 3030.0,502.0 3080,502.0" stroke="#168654" stroke-width="3" fill="none" marker-end="url(#arrow-accepted)"/>
+<path class="graph-edge" data-status="accepted" d="M3360,122.0 C3410.0,122.0 3410.0,312.0 3460,312.0" stroke="#168654" stroke-width="3" fill="none" marker-end="url(#arrow-accepted)"/>
+<text x="3410.0" y="205.0" text-anchor="middle" fill="#475569" font-size="14" paint-order="stroke" stroke="#f8fafc" stroke-width="6" stroke-linejoin="round"><title>weight: 0.2</title>weight: 0.2</text>
+<path class="graph-edge" data-status="accepted" d="M3360,312.0 C3410.0,312.0 3410.0,312.0 3460,312.0" stroke="#168654" stroke-width="3" fill="none" marker-end="url(#arrow-accepted)"/>
+<text x="3410.0" y="300.0" text-anchor="middle" fill="#475569" font-size="14" paint-order="stroke" stroke="#f8fafc" stroke-width="6" stroke-linejoin="round"><title>weight: 0.4</title>weight: 0.4</text>
+<path class="graph-edge" data-status="accepted" d="M3360,502.0 C3410.0,502.0 3410.0,312.0 3460,312.0" stroke="#168654" stroke-width="3" fill="none" marker-end="url(#arrow-accepted)"/>
+<text x="3410.0" y="395.0" text-anchor="middle" fill="#475569" font-size="14" paint-order="stroke" stroke="#f8fafc" stroke-width="6" stroke-linejoin="round"><title>weight: 0.4</title>weight: 0.4</text>
+<path class="graph-edge" data-status="accepted" d="M3740,312.0 C3790.0,312.0 3790.0,407.0 3840,407.0" stroke="#168654" stroke-width="3" fill="none" marker-end="url(#arrow-accepted)"/>
+<path class="graph-edge" data-status="accepted" d="M4120,407.0 C4170.0,407.0 4170.0,502.0 4220,502.0" stroke="#168654" stroke-width="3" fill="none" marker-end="url(#arrow-accepted)"/>
+<path class="graph-edge" data-status="accepted" d="M4500,502.0 C4550.0,502.0 4550.0,502.0 4600,502.0" stroke="#168654" stroke-width="3" fill="none" marker-end="url(#arrow-accepted)"/>
+<path class="graph-edge" data-status="accepted" d="M4880,502.0 C4930.0,502.0 4930.0,502.0 4980,502.0" stroke="#168654" stroke-width="3" fill="none" marker-end="url(#arrow-accepted)"/>
+<path class="graph-edge" data-status="accepted" d="M5260,502.0 C5310.0,502.0 5310.0,502.0 5360,502.0" stroke="#168654" stroke-width="3" fill="none" marker-end="url(#arrow-accepted)"/>
+<path class="graph-edge" data-status="rejected" d="M2600,502.0 C2650.0,502.0 2650.0,597.0 2700,597.0" stroke="#d34a4a" stroke-width="3" fill="none" marker-end="url(#arrow-rejected)"/>
+<path class="graph-edge" data-status="rejected" d="M2980,597.0 C3030.0,597.0 3030.0,692.0 3080,692.0" stroke="#d34a4a" stroke-width="3" fill="none" marker-end="url(#arrow-rejected)"/>
+<path class="graph-edge" data-status="in_progress" d="M2600,502.0 C2650.0,502.0 2650.0,787.0 2700,787.0" stroke="#64748b" stroke-width="3" fill="none" stroke-dasharray="9 7" marker-end="url(#arrow-in_progress)"/>
+<path class="graph-edge" data-status="in_progress" d="M2980,787.0 C3030.0,787.0 3030.0,882.0 3080,882.0" stroke="#64748b" stroke-width="3" fill="none" stroke-dasharray="9 7" marker-end="url(#arrow-in_progress)"/>
+<path class="graph-edge" data-status="rejected" d="M3360,122.0 C3410.0,122.0 3410.0,502.0 3460,502.0" stroke="#d34a4a" stroke-width="3" fill="none" marker-end="url(#arrow-rejected)"/>
+<text x="3410.0" y="300.0" text-anchor="middle" fill="#475569" font-size="14" paint-order="stroke" stroke="#f8fafc" stroke-width="6" stroke-linejoin="round"><title>weight: 0.333</title>weight: 0.333</text>
+<path class="graph-edge" data-status="rejected" d="M3360,312.0 C3410.0,312.0 3410.0,502.0 3460,502.0" stroke="#d34a4a" stroke-width="3" fill="none" marker-end="url(#arrow-rejected)"/>
+<text x="3410.0" y="395.0" text-anchor="middle" fill="#475569" font-size="14" paint-order="stroke" stroke="#f8fafc" stroke-width="6" stroke-linejoin="round"><title>weight: 0.333</title>weight: 0.333</text>
+<path class="graph-edge" data-status="rejected" d="M3360,502.0 C3410.0,502.0 3410.0,502.0 3460,502.0" stroke="#d34a4a" stroke-width="3" fill="none" marker-end="url(#arrow-rejected)"/>
+<text x="3410.0" y="490.0" text-anchor="middle" fill="#475569" font-size="14" paint-order="stroke" stroke="#f8fafc" stroke-width="6" stroke-linejoin="round"><title>weight: 0.333</title>weight: 0.333</text>
+<path class="graph-edge" data-status="rejected" d="M3740,502.0 C3790.0,502.0 3790.0,597.0 3840,597.0" stroke="#d34a4a" stroke-width="3" fill="none" marker-end="url(#arrow-rejected)"/>
+<path class="graph-edge" data-status="in_progress" d="M5640,502.0 C5690.0,502.0 5690.0,502.0 5740,502.0" stroke="#64748b" stroke-width="3" fill="none" stroke-dasharray="9 7" marker-end="url(#arrow-in_progress)"/>
+<path class="graph-edge" data-status="in_progress" d="M3360,312.0 C3410.0,312.0 3410.0,692.0 3460,692.0" stroke="#64748b" stroke-width="3" fill="none" stroke-dasharray="9 7" marker-end="url(#arrow-in_progress)"/>
+<g class="graph-node" transform="translate(40,430.0)"><title>base</title>
+<rect width="280" height="144" rx="30" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">base</text>
+<text x="20" y="59" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="83" fill="#334d5c" font-size="15">@0a1b2c3</text>
+<text x="20" y="112" fill="#64748b" font-size="11">example-org/base-model</text>
+</g>
+<g class="graph-node" transform="translate(420,430.0)" data-record="exp-001" tabindex="0" role="button" aria-label="Inspect exp-001"><title>Supervised fine-tuning on the instruction set</title>
+<rect width="280" height="144" rx="16" fill="#e8f3c4" stroke="#82a022" stroke-width="1.5"/>
+<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">exp-001</text>
+<text x="20" y="56" fill="#334d5c" font-size="15">Supervised fine-tuning on the</text>
+<text x="20" y="75" fill="#334d5c" font-size="15">instruction set</text>
+<circle cx="24" cy="105" r="4" fill="#168654"/><text x="35" y="110" fill="#475569" font-size="13">accepted</text>
+<text x="20" y="130" fill="#475569" font-size="11">sft</text>
+</g>
+<g class="graph-node" transform="translate(800,430.0)"><title>sft-v1</title>
+<rect width="280" height="144" rx="30" fill="#e8f3c4" stroke="#82a022" stroke-width="1.5"/>
+<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">sft-v1</text>
+<text x="20" y="59" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="83" fill="#334d5c" font-size="15">@5d2c7a1</text>
+<text x="20" y="112" fill="#64748b" font-size="11">example-org/sft-v1</text>
+</g>
+<g class="graph-node" transform="translate(1180,430.0)" data-record="exp-002" tabindex="0" role="button" aria-label="Inspect exp-002"><title>First RLHF round</title>
+<rect width="280" height="144" rx="16" fill="#d9f3c4" stroke="#5ba022" stroke-width="1.5"/>
+<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">exp-002</text>
+<text x="20" y="56" fill="#334d5c" font-size="15">First RLHF round</text>
+<circle cx="24" cy="105" r="4" fill="#168654"/><text x="35" y="110" fill="#475569" font-size="13">accepted</text>
+<text x="20" y="130" fill="#475569" font-size="11">rlhf1</text>
+</g>
+<g class="graph-node" transform="translate(1560,430.0)"><title>rlhf1-v1</title>
+<rect width="280" height="144" rx="30" fill="#d9f3c4" stroke="#5ba022" stroke-width="1.5"/>
+<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">rlhf1-v1</text>
+<text x="20" y="59" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="83" fill="#334d5c" font-size="15">@9e3f1b0</text>
+<text x="20" y="112" fill="#64748b" font-size="11">example-org/rlhf1-v1</text>
+</g>
+<g class="graph-node" transform="translate(1940,430.0)" data-record="exp-003" tabindex="0" role="button" aria-label="Inspect exp-003"><title>Preference optimisation on curated pairs</title>
+<rect width="280" height="144" rx="16" fill="#ccc4f3" stroke="#3822a0" stroke-width="1.5"/>
+<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">exp-003</text>
+<text x="20" y="56" fill="#334d5c" font-size="15">Preference optimisation on</text>
+<text x="20" y="75" fill="#334d5c" font-size="15">curated pairs</text>
+<circle cx="24" cy="105" r="4" fill="#168654"/><text x="35" y="110" fill="#475569" font-size="13">accepted</text>
+<text x="20" y="130" fill="#475569" font-size="11">dpo</text>
+</g>
+<g class="graph-node" transform="translate(2320,430.0)"><title>dpo-v1</title>
+<rect width="280" height="144" rx="30" fill="#ccc4f3" stroke="#3822a0" stroke-width="1.5"/>
+<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">dpo-v1</text>
+<text x="20" y="59" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="83" fill="#334d5c" font-size="15">@7b4a2d9</text>
+<text x="20" y="112" fill="#64748b" font-size="11">example-org/dpo-v1</text>
+</g>
+<g class="graph-node" transform="translate(2700,145.0)" data-record="exp-004" tabindex="0" role="button" aria-label="Inspect exp-004"><title>RLVR with unit-test rewards</title>
+<rect width="280" height="144" rx="16" fill="#f3cec4" stroke="#a03c22" stroke-width="1.5"/>
+<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">exp-004</text>
+<text x="20" y="56" fill="#334d5c" font-size="15">RLVR with unit-test rewards</text>
+<circle cx="24" cy="105" r="4" fill="#168654"/><text x="35" y="110" fill="#475569" font-size="13">accepted</text>
+<text x="20" y="130" fill="#475569" font-size="11">rlvr, code</text>
+</g>
+<g class="graph-node" transform="translate(3080,50.0)"><title>rlvr-a-v1</title>
+<rect width="280" height="144" rx="30" fill="#f3cec4" stroke="#a03c22" stroke-width="1.5"/>
+<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">rlvr-a-v1</text>
+<text x="20" y="59" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="83" fill="#334d5c" font-size="15">@6a1c3e5</text>
+<text x="20" y="112" fill="#64748b" font-size="11">example-org/rlvr-a</text>
+</g>
+<g class="graph-node" transform="translate(3080,240.0)"><title>rlvr-a-v2</title>
+<rect width="280" height="144" rx="30" fill="#f3cec4" stroke="#a03c22" stroke-width="1.5"/>
+<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">rlvr-a-v2</text>
+<text x="20" y="59" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="83" fill="#334d5c" font-size="15">@8c2e4f6</text>
+<text x="20" y="112" fill="#64748b" font-size="11">example-org/rlvr-a</text>
+</g>
+<g class="graph-node" transform="translate(2700,335.0)" data-record="exp-005" tabindex="0" role="button" aria-label="Inspect exp-005"><title>RLVR with exact-match rewards</title>
+<rect width="280" height="144" rx="16" fill="#f3cec4" stroke="#a03c22" stroke-width="1.5"/>
+<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">exp-005</text>
+<text x="20" y="56" fill="#334d5c" font-size="15">RLVR with exact-match rewards</text>
+<circle cx="24" cy="105" r="4" fill="#168654"/><text x="35" y="110" fill="#475569" font-size="13">accepted</text>
+<text x="20" y="130" fill="#475569" font-size="11">rlvr, reasoning</text>
+</g>
+<g class="graph-node" transform="translate(3080,430.0)"><title>rlvr-b-v1</title>
+<rect width="280" height="144" rx="30" fill="#f3cec4" stroke="#a03c22" stroke-width="1.5"/>
+<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">rlvr-b-v1</text>
+<text x="20" y="59" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="83" fill="#334d5c" font-size="15">@2f5b8d1</text>
+<text x="20" y="112" fill="#64748b" font-size="11">example-org/rlvr-b</text>
+</g>
+<g class="graph-node" transform="translate(3460,240.0)" data-record="exp-006" tabindex="0" role="button" aria-label="Inspect exp-006"><title>Weighted soup of three RLVR checkpoints</title>
+<rect width="280" height="144" rx="16" fill="#c4caf3" stroke="#2231a0" stroke-width="1.5"/>
+<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">exp-006</text>
+<text x="20" y="56" fill="#334d5c" font-size="15">Weighted soup of three RLVR</text>
+<text x="20" y="75" fill="#334d5c" font-size="15">checkpoints</text>
+<circle cx="24" cy="105" r="4" fill="#168654"/><text x="35" y="110" fill="#475569" font-size="13">accepted</text>
+<text x="20" y="130" fill="#475569" font-size="11">weight_aggregation, souping</text>
+</g>
+<g class="graph-node" transform="translate(3840,335.0)"><title>soup-v1</title>
+<rect width="280" height="144" rx="30" fill="#c4caf3" stroke="#2231a0" stroke-width="1.5"/>
+<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">soup-v1</text>
+<text x="20" y="59" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="83" fill="#334d5c" font-size="15">@4c1d9e2</text>
+<text x="20" y="112" fill="#64748b" font-size="11">example-org/soup-v1</text>
+</g>
+<g class="graph-node" transform="translate(4220,430.0)" data-record="exp-007" tabindex="0" role="button" aria-label="Inspect exp-007"><title>OPSD on the merged checkpoint</title>
+<rect width="280" height="144" rx="16" fill="#f3c4df" stroke="#a0226c" stroke-width="1.5"/>
+<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">exp-007</text>
+<text x="20" y="56" fill="#334d5c" font-size="15">OPSD on the merged checkpoint</text>
+<circle cx="24" cy="105" r="4" fill="#168654"/><text x="35" y="110" fill="#475569" font-size="13">accepted</text>
+<text x="20" y="130" fill="#475569" font-size="11">opsd</text>
+</g>
+<g class="graph-node" transform="translate(4600,430.0)"><title>opsd-v1</title>
+<rect width="280" height="144" rx="30" fill="#f3c4df" stroke="#a0226c" stroke-width="1.5"/>
+<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">opsd-v1</text>
+<text x="20" y="59" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="83" fill="#334d5c" font-size="15">@3d7f9a2</text>
+<text x="20" y="112" fill="#64748b" font-size="11">example-org/opsd-v1</text>
+</g>
+<g class="graph-node" transform="translate(4980,430.0)" data-record="exp-008" tabindex="0" role="button" aria-label="Inspect exp-008"><title>Final RLHF alignment round</title>
+<rect width="280" height="144" rx="16" fill="#c4cef3" stroke="#223da0" stroke-width="1.5"/>
+<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">exp-008</text>
+<text x="20" y="56" fill="#334d5c" font-size="15">Final RLHF alignment round</text>
+<circle cx="24" cy="105" r="4" fill="#168654"/><text x="35" y="110" fill="#475569" font-size="13">accepted</text>
+<text x="20" y="130" fill="#475569" font-size="11">rlhf2</text>
+</g>
+<g class="graph-node" transform="translate(5360,430.0)"><title>rlhf2-v1</title>
+<rect width="280" height="144" rx="30" fill="#c4cef3" stroke="#223da0" stroke-width="1.5"/>
+<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">rlhf2-v1</text>
+<text x="20" y="59" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="83" fill="#334d5c" font-size="15">@1e6c8b4</text>
+<text x="20" y="112" fill="#64748b" font-size="11">example-org/rlhf2-v1</text>
+</g>
+<g class="graph-node" transform="translate(2700,525.0)" data-record="exp-009" tabindex="0" role="button" aria-label="Inspect exp-009"><title>RLVR with learned rewards</title>
+<rect width="280" height="144" rx="16" fill="#f3cec4" stroke="#a03c22" stroke-width="1.5"/>
+<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">exp-009</text>
+<text x="20" y="56" fill="#334d5c" font-size="15">RLVR with learned rewards</text>
+<circle cx="24" cy="105" r="4" fill="#d34a4a"/><text x="35" y="110" fill="#475569" font-size="13">rejected</text>
+<text x="20" y="130" fill="#475569" font-size="11">rlvr, reasoning</text>
+</g>
+<g class="graph-node" transform="translate(3080,620.0)"><title>rlvr-c-v1</title>
+<rect width="280" height="144" rx="30" fill="#f3cec4" stroke="#a03c22" stroke-width="1.5"/>
+<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">rlvr-c-v1</text>
+<text x="20" y="59" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="83" fill="#334d5c" font-size="15">@5a9d1f3</text>
+<text x="20" y="112" fill="#64748b" font-size="11">example-org/rlvr-c</text>
+</g>
+<g class="graph-node" transform="translate(2700,715.0)" data-record="exp-010" tabindex="0" role="button" aria-label="Inspect exp-010"><title>RLVR with a longer task horizon</title>
+<rect width="280" height="144" rx="16" fill="#f3cec4" stroke="#a03c22" stroke-width="1.5"/>
+<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">exp-010</text>
+<text x="20" y="56" fill="#334d5c" font-size="15">RLVR with a longer task</text>
+<text x="20" y="75" fill="#334d5c" font-size="15">horizon</text>
+<circle cx="24" cy="105" r="4" fill="#64748b"/><text x="35" y="110" fill="#475569" font-size="13">in progress</text>
+<text x="20" y="130" fill="#475569" font-size="11">rlvr, reasoning</text>
+</g>
+<g class="graph-node" transform="translate(3080,810.0)"><title>rlvr-d-v1</title>
+<rect width="280" height="144" rx="30" fill="#f3cec4" stroke="#a03c22" stroke-width="1.5"/>
+<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">rlvr-d-v1</text>
+<text x="20" y="59" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="83" fill="#334d5c" font-size="15">@3a6d8e1</text>
+<text x="20" y="112" fill="#64748b" font-size="11">example-org/rlvr-d</text>
+</g>
+<g class="graph-node" transform="translate(3460,430.0)" data-record="exp-012" tabindex="0" role="button" aria-label="Inspect exp-012"><title>Uniform soup of three RLVR checkpoints</title>
+<rect width="280" height="144" rx="16" fill="#c4caf3" stroke="#2231a0" stroke-width="1.5"/>
+<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">exp-012</text>
+<text x="20" y="56" fill="#334d5c" font-size="15">Uniform soup of three RLVR</text>
+<text x="20" y="75" fill="#334d5c" font-size="15">checkpoints</text>
+<circle cx="24" cy="105" r="4" fill="#d34a4a"/><text x="35" y="110" fill="#475569" font-size="13">rejected</text>
+<text x="20" y="130" fill="#475569" font-size="11">weight_aggregation, souping, ablation</text>
+</g>
+<g class="graph-node" transform="translate(3840,525.0)"><title>soup-uniform-v1</title>
+<rect width="280" height="144" rx="30" fill="#c4caf3" stroke="#2231a0" stroke-width="1.5"/>
+<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">soup-uniform-v1</text>
+<text x="20" y="59" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="83" fill="#334d5c" font-size="15">@6d2f8a4</text>
+<text x="20" y="112" fill="#64748b" font-size="11">example-org/soup-uniform</text>
+</g>
+<g class="graph-node" transform="translate(5740,430.0)" data-record="exp-013" tabindex="0" role="button" aria-label="Inspect exp-013"><title>Safety-focused preference optimisation</title>
+<rect width="280" height="144" rx="16" fill="#ccc4f3" stroke="#3822a0" stroke-width="1.5"/>
+<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">exp-013</text>
+<text x="20" y="56" fill="#334d5c" font-size="15">Safety-focused preference</text>
+<text x="20" y="75" fill="#334d5c" font-size="15">optimisation</text>
+<circle cx="24" cy="105" r="4" fill="#64748b"/><text x="35" y="110" fill="#475569" font-size="13">in progress</text>
+<text x="20" y="130" fill="#475569" font-size="11">dpo, safety</text>
+</g>
+<g class="graph-node" transform="translate(3460,620.0)" data-record="exp-014" tabindex="0" role="button" aria-label="Inspect exp-014"><title>Unit-test reward ablation</title>
+<rect width="280" height="144" rx="16" fill="#f3cec4" stroke="#a03c22" stroke-width="1.5"/>
+<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">exp-014</text>
+<text x="20" y="56" fill="#334d5c" font-size="15">Unit-test reward ablation</text>
+<circle cx="24" cy="105" r="4" fill="#64748b"/><text x="35" y="110" fill="#475569" font-size="13">in progress</text>
+<text x="20" y="130" fill="#475569" font-size="11">rlvr, ablation, code</text>
+</g>
+</g>
+</svg></div>
+<div class="tags-footer"><span>Node colours / tags</span><div class="tags"><span class="tag" style="--tag-fill:#f2c4f3;--tag-ink:#9f22a0">ablation</span><span class="tag" style="--tag-fill:#c4f3c5;--tag-ink:#22a026">code</span><span class="tag" style="--tag-fill:#ccc4f3;--tag-ink:#3822a0">dpo</span><span class="tag" style="--tag-fill:#f3c4df;--tag-ink:#a0226c">opsd</span><span class="tag" style="--tag-fill:#f3d1c4;--tag-ink:#a04622">reasoning</span><span class="tag" style="--tag-fill:#d9f3c4;--tag-ink:#5ba022">rlhf1</span><span class="tag" style="--tag-fill:#c4cef3;--tag-ink:#223da0">rlhf2</span><span class="tag" style="--tag-fill:#f3cec4;--tag-ink:#a03c22">rlvr</span><span class="tag" style="--tag-fill:#c4edf3;--tag-ink:#2290a0">safety</span><span class="tag" style="--tag-fill:#e8f3c4;--tag-ink:#82a022">sft</span><span class="tag" style="--tag-fill:#c4f3ef;--tag-ink:#22a097">souping</span><span class="tag" style="--tag-fill:#c4caf3;--tag-ink:#2231a0">weight_aggregation</span></div></div></section>
+<noscript><p>The diagram and records are available below. Enable JavaScript for zoom, pan and search.</p></noscript>
+<section id="experiments" aria-labelledby="experiments-heading"><div class="section-head"><div><div class="section-kicker">The evidence behind the graph</div><h2 id="experiments-heading">Experiment records</h2><p class="subtitle">Code, configuration, checkpoints and decisions in one place.</p></div><div class="filters"><label class="sr-only" for="search">Search experiments</label><input id="search" type="search" placeholder="Search titles, tags, methods…"><label class="sr-only" for="status-filter">Filter by status</label><select id="status-filter"><option value="all">All statuses</option><option value="accepted">Accepted</option><option value="in_progress">In progress</option><option value="rejected">Rejected</option></select></div></div><p class="result-count" id="result-count" aria-live="polite"></p><div class="record-grid"><details class="record" id="record-exp-001" data-status="accepted" data-search="exp-001 supervised fine-tuning on the instruction set  [&#x27;sft&#x27;] sft ">
+<summary><div class="record-top"><span class="record-id">exp-001</span><span class="badge accepted">accepted</span></div>
+<h3>Supervised fine-tuning on the instruction set</h3><p class="record-description"></p><div class="tags"><span class="tag" style="--tag-fill:#e8f3c4;--tag-ink:#82a022">sft</span></div><span class="inspect">Inspect record <span aria-hidden="true">↗</span></span></summary>
+<div class="record-body"><dl><dt>Method</dt><dd>sft</dd><dt>Owner</dt><dd>Researcher A · researcher-a</dd><dt>Code</dt><dd><a href="https://github.com/example-org/training/commit/1f0e9d8">example-org/training <span class="mono">@1f0e9d8</span></a></dd></dl>
+<h4>Inputs</h4><ul class="checkpoints"><li><a href="https://huggingface.co/example-org/base-model/tree/0a1b2c3">base <span class="mono">@0a1b2c3</span></a><small></small></li></ul><h4>Outputs</h4><ul class="checkpoints"><li><a href="https://huggingface.co/example-org/sft-v1/tree/5d2c7a1">sft-v1 <span class="mono">@5d2c7a1</span></a><small>math: 0.412, code: 0.385, chat: 6.8, safety: 0.902</small><small>Evaluation: <a href="https://github.com/example-org/evaluation/commit/d41e7aa">example-org/evaluation <span class="mono">@d41e7aa</span></a></small></li></ul><a class="source-link" href="experiments/exp-001-sft.yaml">View source YAML ↗</a></div></details><details class="record" id="record-exp-002" data-status="accepted" data-search="exp-002 first rlhf round  [&#x27;rlhf1&#x27;] rlhf ">
+<summary><div class="record-top"><span class="record-id">exp-002</span><span class="badge accepted">accepted</span></div>
+<h3>First RLHF round</h3><p class="record-description"></p><div class="tags"><span class="tag" style="--tag-fill:#d9f3c4;--tag-ink:#5ba022">rlhf1</span></div><span class="inspect">Inspect record <span aria-hidden="true">↗</span></span></summary>
+<div class="record-body"><dl><dt>Method</dt><dd>rlhf</dd><dt>Owner</dt><dd>Researcher B · researcher-b</dd><dt>Code</dt><dd><a href="https://github.com/example-org/training/commit/2a7b4c6">example-org/training <span class="mono">@2a7b4c6</span></a></dd></dl>
+<h4>Inputs</h4><ul class="checkpoints"><li><a href="https://huggingface.co/example-org/sft-v1/tree/5d2c7a1">sft-v1 <span class="mono">@5d2c7a1</span></a><small></small></li></ul><h4>Outputs</h4><ul class="checkpoints"><li><a href="https://huggingface.co/example-org/rlhf1-v1/tree/9e3f1b0">rlhf1-v1 <span class="mono">@9e3f1b0</span></a><small>math: 0.437, code: 0.401, chat: 7.3, safety: 0.931</small><small>Evaluation: <a href="https://github.com/example-org/evaluation/commit/d41e7aa">example-org/evaluation <span class="mono">@d41e7aa</span></a></small></li></ul><a class="source-link" href="experiments/exp-002-rlhf1.yaml">View source YAML ↗</a></div></details><details class="record" id="record-exp-003" data-status="accepted" data-search="exp-003 preference optimisation on curated pairs  [&#x27;dpo&#x27;] dpo ">
+<summary><div class="record-top"><span class="record-id">exp-003</span><span class="badge accepted">accepted</span></div>
+<h3>Preference optimisation on curated pairs</h3><p class="record-description"></p><div class="tags"><span class="tag" style="--tag-fill:#ccc4f3;--tag-ink:#3822a0">dpo</span></div><span class="inspect">Inspect record <span aria-hidden="true">↗</span></span></summary>
+<div class="record-body"><dl><dt>Method</dt><dd>dpo</dd><dt>Owner</dt><dd>Researcher A · researcher-a</dd><dt>Code</dt><dd><a href="https://github.com/example-org/training/commit/3c8d5e7">example-org/training <span class="mono">@3c8d5e7</span></a></dd></dl>
+<h4>Inputs</h4><ul class="checkpoints"><li><a href="https://huggingface.co/example-org/rlhf1-v1/tree/9e3f1b0">rlhf1-v1 <span class="mono">@9e3f1b0</span></a><small></small></li></ul><h4>Outputs</h4><ul class="checkpoints"><li><a href="https://huggingface.co/example-org/dpo-v1/tree/7b4a2d9">dpo-v1 <span class="mono">@7b4a2d9</span></a><small>math: 0.455, code: 0.418, chat: 7.6, safety: 0.944</small><small>Evaluation: <a href="https://github.com/example-org/evaluation/commit/d41e7aa">example-org/evaluation <span class="mono">@d41e7aa</span></a></small></li></ul><a class="source-link" href="experiments/exp-003-dpo.yaml">View source YAML ↗</a></div></details><details class="record" id="record-exp-004" data-status="accepted" data-search="exp-004 rlvr with unit-test rewards improve code generation by fine-tuning dpo-v1 against executable unit tests. [&#x27;rlvr&#x27;, &#x27;code&#x27;] rlvr ">
+<summary><div class="record-top"><span class="record-id">exp-004</span><span class="badge accepted">accepted</span></div>
+<h3>RLVR with unit-test rewards</h3><p class="record-description">Improve code generation by fine-tuning dpo-v1 against executable unit tests.</p><div class="tags"><span class="tag" style="--tag-fill:#f3cec4;--tag-ink:#a03c22">rlvr</span><span class="tag" style="--tag-fill:#c4f3c5;--tag-ink:#22a026">code</span></div><span class="inspect">Inspect record <span aria-hidden="true">↗</span></span></summary>
+<div class="record-body"><dl><dt>Method</dt><dd>rlvr</dd><dt>Owner</dt><dd>Researcher A · researcher-a</dd><dt>Code</dt><dd><a href="https://github.com/example-org/training/commit/4d9e6f8">example-org/training <span class="mono">@4d9e6f8</span></a></dd></dl>
+<h4>Inputs</h4><ul class="checkpoints"><li><a href="https://huggingface.co/example-org/dpo-v1/tree/7b4a2d9">dpo-v1 <span class="mono">@7b4a2d9</span></a><small></small></li></ul><h4>Outputs</h4><ul class="checkpoints"><li><a href="https://huggingface.co/example-org/rlvr-a/tree/6a1c3e5">rlvr-a-v1 <span class="mono">@6a1c3e5</span></a><small>math: 0.498, code: 0.502, chat: 7.4, safety: 0.938</small><small>Evaluation: <a href="https://github.com/example-org/evaluation/commit/d41e7aa">example-org/evaluation <span class="mono">@d41e7aa</span></a></small></li><li><a href="https://huggingface.co/example-org/rlvr-a/tree/8c2e4f6">rlvr-a-v2 <span class="mono">@8c2e4f6</span></a><small>math: 0.531, code: 0.537, chat: 7.3, safety: 0.935</small><small>Evaluation: <a href="https://github.com/example-org/evaluation/commit/d41e7aa">example-org/evaluation <span class="mono">@d41e7aa</span></a></small></li></ul><p class="record-notes">Two checkpoints from one run; v2 is the later step and the stronger on code.</p><a class="source-link" href="experiments/exp-004-rlvr-a.yaml">View source YAML ↗</a></div></details><details class="record" id="record-exp-005" data-status="accepted" data-search="exp-005 rlvr with exact-match rewards test whether exact-match rewards improve reasoning by fine-tuning dpo-v1 with rlvr. [&#x27;rlvr&#x27;, &#x27;reasoning&#x27;] rlvr ">
+<summary><div class="record-top"><span class="record-id">exp-005</span><span class="badge accepted">accepted</span></div>
+<h3>RLVR with exact-match rewards</h3><p class="record-description">Test whether exact-match rewards improve reasoning by fine-tuning dpo-v1 with RLVR.</p><div class="tags"><span class="tag" style="--tag-fill:#f3cec4;--tag-ink:#a03c22">rlvr</span><span class="tag" style="--tag-fill:#f3d1c4;--tag-ink:#a04622">reasoning</span></div><span class="inspect">Inspect record <span aria-hidden="true">↗</span></span></summary>
+<div class="record-body"><dl><dt>Method</dt><dd>rlvr</dd><dt>Owner</dt><dd>Researcher B · researcher-b</dd><dt>Code</dt><dd><a href="https://github.com/example-org/training/commit/5e0f7a9">example-org/training <span class="mono">@5e0f7a9</span></a></dd><dt>file</dt><dd><code>configs/rlvr.yaml</code></dd></dl>
+<h4>Inputs</h4><ul class="checkpoints"><li><a href="https://huggingface.co/example-org/dpo-v1/tree/7b4a2d9">dpo-v1 <span class="mono">@7b4a2d9</span></a><small></small></li></ul><h4>Outputs</h4><ul class="checkpoints"><li><a href="https://huggingface.co/example-org/rlvr-b/tree/2f5b8d1">rlvr-b-v1 <span class="mono">@2f5b8d1</span></a><small>math: 0.589, code: 0.441, chat: 7.5, safety: 0.941</small><small>Evaluation: <a href="https://github.com/example-org/evaluation/commit/d41e7aa">example-org/evaluation <span class="mono">@d41e7aa</span></a></small></li></ul><a class="source-link" href="experiments/exp-005-rlvr-b.yaml">View source YAML ↗</a></div></details><details class="record" id="record-exp-006" data-status="accepted" data-search="exp-006 weighted soup of three rlvr checkpoints combine complementary code and reasoning checkpoints with a weighted parameter average. [&#x27;weight_aggregation&#x27;, &#x27;souping&#x27;] weighted_average ">
+<summary><div class="record-top"><span class="record-id">exp-006</span><span class="badge accepted">accepted</span></div>
+<h3>Weighted soup of three RLVR checkpoints</h3><p class="record-description">Combine complementary code and reasoning checkpoints with a weighted parameter average.</p><div class="tags"><span class="tag" style="--tag-fill:#c4caf3;--tag-ink:#2231a0">weight_aggregation</span><span class="tag" style="--tag-fill:#c4f3ef;--tag-ink:#22a097">souping</span></div><span class="inspect">Inspect record <span aria-hidden="true">↗</span></span></summary>
+<div class="record-body"><dl><dt>Method</dt><dd>weighted_average</dd><dt>Owner</dt><dd>Researcher A · researcher-a</dd><dt>Code</dt><dd><a href="https://github.com/example-org/merging/commit/8f3a21c">example-org/merging <span class="mono">@8f3a21c</span></a></dd></dl>
+<h4>Inputs</h4><ul class="checkpoints"><li><a href="https://huggingface.co/example-org/rlvr-a/tree/6a1c3e5">rlvr-a-v1 <span class="mono">@6a1c3e5</span></a><small>weight: 0.2</small></li><li><a href="https://huggingface.co/example-org/rlvr-a/tree/8c2e4f6">rlvr-a-v2 <span class="mono">@8c2e4f6</span></a><small>weight: 0.4</small></li><li><a href="https://huggingface.co/example-org/rlvr-b/tree/2f5b8d1">rlvr-b-v1 <span class="mono">@2f5b8d1</span></a><small>weight: 0.4</small></li></ul><h4>Outputs</h4><ul class="checkpoints"><li><a href="https://huggingface.co/example-org/soup-v1/tree/4c1d9e2">soup-v1 <span class="mono">@4c1d9e2</span></a><small>math: 0.612, code: 0.548, chat: 7.6, safety: 0.946</small><small>Evaluation: <a href="https://github.com/example-org/evaluation/commit/d41e7aa">example-org/evaluation <span class="mono">@d41e7aa</span></a></small></li></ul><p class="record-notes">Better aggregate than any single input. The uniform alternative is recorded in rejected/exp-012-uniform-soup.yaml.</p><a class="source-link" href="experiments/exp-006-soup.yaml">View source YAML ↗</a></div></details><details class="record" id="record-exp-007" data-status="accepted" data-search="exp-007 opsd on the merged checkpoint  [&#x27;opsd&#x27;] opsd ">
+<summary><div class="record-top"><span class="record-id">exp-007</span><span class="badge accepted">accepted</span></div>
+<h3>OPSD on the merged checkpoint</h3><p class="record-description"></p><div class="tags"><span class="tag" style="--tag-fill:#f3c4df;--tag-ink:#a0226c">opsd</span></div><span class="inspect">Inspect record <span aria-hidden="true">↗</span></span></summary>
+<div class="record-body"><dl><dt>Method</dt><dd>opsd</dd><dt>Owner</dt><dd>Researcher C · researcher-c</dd><dt>Code</dt><dd><a href="https://github.com/example-org/training/commit/6f1a8b0">example-org/training <span class="mono">@6f1a8b0</span></a></dd></dl>
+<h4>Inputs</h4><ul class="checkpoints"><li><a href="https://huggingface.co/example-org/soup-v1/tree/4c1d9e2">soup-v1 <span class="mono">@4c1d9e2</span></a><small></small></li></ul><h4>Outputs</h4><ul class="checkpoints"><li><a href="https://huggingface.co/example-org/opsd-v1/tree/3d7f9a2">opsd-v1 <span class="mono">@3d7f9a2</span></a><small>math: 0.624, code: 0.556, chat: 7.8, safety: 0.948</small><small>Evaluation: <a href="https://github.com/example-org/evaluation/commit/d41e7aa">example-org/evaluation <span class="mono">@d41e7aa</span></a></small></li></ul><a class="source-link" href="experiments/exp-007-opsd.yaml">View source YAML ↗</a></div></details><details class="record" id="record-exp-008" data-status="accepted" data-search="exp-008 final rlhf alignment round  [&#x27;rlhf2&#x27;] rlhf ">
+<summary><div class="record-top"><span class="record-id">exp-008</span><span class="badge accepted">accepted</span></div>
+<h3>Final RLHF alignment round</h3><p class="record-description"></p><div class="tags"><span class="tag" style="--tag-fill:#c4cef3;--tag-ink:#223da0">rlhf2</span></div><span class="inspect">Inspect record <span aria-hidden="true">↗</span></span></summary>
+<div class="record-body"><dl><dt>Method</dt><dd>rlhf</dd><dt>Owner</dt><dd>Researcher B · researcher-b</dd><dt>Code</dt><dd><a href="https://github.com/example-org/training/commit/7a2b9c1">example-org/training <span class="mono">@7a2b9c1</span></a></dd></dl>
+<h4>Inputs</h4><ul class="checkpoints"><li><a href="https://huggingface.co/example-org/opsd-v1/tree/3d7f9a2">opsd-v1 <span class="mono">@3d7f9a2</span></a><small></small></li></ul><h4>Outputs</h4><ul class="checkpoints"><li><a href="https://huggingface.co/example-org/rlhf2-v1/tree/1e6c8b4">rlhf2-v1 <span class="mono">@1e6c8b4</span></a><small>math: 0.619, code: 0.553, chat: 8.2, safety: 0.963</small><small>Evaluation: <a href="https://github.com/example-org/evaluation/commit/d41e7aa">example-org/evaluation <span class="mono">@d41e7aa</span></a></small></li></ul><a class="source-link" href="experiments/exp-008-rlhf2.yaml">View source YAML ↗</a></div></details><details class="record" id="record-exp-009" data-status="rejected" data-search="exp-009 rlvr with learned rewards test whether a learned reward model improves reasoning compared with exact-match verification. [&#x27;rlvr&#x27;, &#x27;reasoning&#x27;] rlvr math accuracy and safety regressed relative to dpo-v1 despite small code and chat gains.">
+<summary><div class="record-top"><span class="record-id">exp-009</span><span class="badge rejected">rejected</span></div>
+<h3>RLVR with learned rewards</h3><p class="record-description">Test whether a learned reward model improves reasoning compared with exact-match verification.</p><div class="tags"><span class="tag" style="--tag-fill:#f3cec4;--tag-ink:#a03c22">rlvr</span><span class="tag" style="--tag-fill:#f3d1c4;--tag-ink:#a04622">reasoning</span></div><span class="inspect">Inspect record <span aria-hidden="true">↗</span></span></summary>
+<div class="record-body"><div class="reject-reason"><strong>Rejection reason</strong><p>Math accuracy and safety regressed relative to dpo-v1 despite small code and chat gains.</p></div><dl><dt>Method</dt><dd>rlvr</dd><dt>Owner</dt><dd>Researcher C · researcher-c</dd><dt>Code</dt><dd><a href="https://github.com/example-org/training/commit/8b2e4a6">example-org/training <span class="mono">@8b2e4a6</span></a></dd><dt>file</dt><dd><code>configs/learned-reward.yaml</code></dd></dl>
+<h4>Inputs</h4><ul class="checkpoints"><li><a href="https://huggingface.co/example-org/dpo-v1/tree/7b4a2d9">dpo-v1 <span class="mono">@7b4a2d9</span></a><small></small></li></ul><h4>Outputs</h4><ul class="checkpoints"><li><a href="https://huggingface.co/example-org/rlvr-c/tree/5a9d1f3">rlvr-c-v1 <span class="mono">@5a9d1f3</span></a><small>math: 0.401, code: 0.43, chat: 7.7, safety: 0.889</small><small>Evaluation: <a href="https://github.com/example-org/evaluation/commit/d41e7aa">example-org/evaluation <span class="mono">@d41e7aa</span></a></small></li></ul><a class="source-link" href="rejected/exp-009-learned-reward.yaml">View source YAML ↗</a></div></details><details class="record" id="record-exp-010" data-status="in_progress" data-search="exp-010 rlvr with a longer task horizon test whether longer reasoning trajectories improve accuracy by extending the rlvr task horizon. [&#x27;rlvr&#x27;, &#x27;reasoning&#x27;] rlvr ">
+<summary><div class="record-top"><span class="record-id">exp-010</span><span class="badge in_progress">in progress</span></div>
+<h3>RLVR with a longer task horizon</h3><p class="record-description">Test whether longer reasoning trajectories improve accuracy by extending the RLVR task horizon.</p><div class="tags"><span class="tag" style="--tag-fill:#f3cec4;--tag-ink:#a03c22">rlvr</span><span class="tag" style="--tag-fill:#f3d1c4;--tag-ink:#a04622">reasoning</span></div><span class="inspect">Inspect record <span aria-hidden="true">↗</span></span></summary>
+<div class="record-body"><dl><dt>Method</dt><dd>rlvr</dd><dt>Owner</dt><dd>Researcher C · researcher-c</dd><dt>Code</dt><dd><a href="https://github.com/example-org/training/commit/9c4d1e3">example-org/training <span class="mono">@9c4d1e3</span></a></dd><dt>cli</dt><dd><code>--max-steps 2000 --task-horizon 4096 --seed 42</code></dd></dl>
+<h4>Inputs</h4><ul class="checkpoints"><li><a href="https://huggingface.co/example-org/dpo-v1/tree/7b4a2d9">dpo-v1 <span class="mono">@7b4a2d9</span></a><small></small></li></ul><h4>Outputs</h4><ul class="checkpoints"><li><a href="https://huggingface.co/example-org/rlvr-d/tree/3a6d8e1">rlvr-d-v1 <span class="mono">@3a6d8e1</span></a><small>math: 0.573, code: 0.432</small><small>Evaluation: <a href="https://github.com/example-org/evaluation/commit/d41e7aa">example-org/evaluation <span class="mono">@d41e7aa</span></a></small></li></ul><p class="record-notes">Training continues after this intermediate checkpoint; chat and safety evaluations are pending.</p><a class="source-link" href="experiments/exp-010-rlvr-d.yaml">View source YAML ↗</a></div></details><details class="record" id="record-exp-012" data-status="rejected" data-search="exp-012 uniform soup of three rlvr checkpoints check whether equal averaging matches the weighted soup using the same code and reasoning checkpoints. [&#x27;weight_aggregation&#x27;, &#x27;souping&#x27;, &#x27;ablation&#x27;] weighted_average the weighted soup scored higher on all four benchmarks, so the equal-weight alternative was rejected.">
+<summary><div class="record-top"><span class="record-id">exp-012</span><span class="badge rejected">rejected</span></div>
+<h3>Uniform soup of three RLVR checkpoints</h3><p class="record-description">Check whether equal averaging matches the weighted soup using the same code and reasoning checkpoints.</p><div class="tags"><span class="tag" style="--tag-fill:#c4caf3;--tag-ink:#2231a0">weight_aggregation</span><span class="tag" style="--tag-fill:#c4f3ef;--tag-ink:#22a097">souping</span><span class="tag" style="--tag-fill:#f2c4f3;--tag-ink:#9f22a0">ablation</span></div><span class="inspect">Inspect record <span aria-hidden="true">↗</span></span></summary>
+<div class="record-body"><div class="reject-reason"><strong>Rejection reason</strong><p>The weighted soup scored higher on all four benchmarks, so the equal-weight alternative was rejected.</p></div><dl><dt>Method</dt><dd>weighted_average</dd><dt>Owner</dt><dd>Researcher A · researcher-a</dd><dt>Code</dt><dd><a href="https://github.com/example-org/merging/commit/8f3a21c">example-org/merging <span class="mono">@8f3a21c</span></a></dd></dl>
+<h4>Inputs</h4><ul class="checkpoints"><li><a href="https://huggingface.co/example-org/rlvr-a/tree/6a1c3e5">rlvr-a-v1 <span class="mono">@6a1c3e5</span></a><small>weight: 0.3333333333333333</small></li><li><a href="https://huggingface.co/example-org/rlvr-a/tree/8c2e4f6">rlvr-a-v2 <span class="mono">@8c2e4f6</span></a><small>weight: 0.3333333333333333</small></li><li><a href="https://huggingface.co/example-org/rlvr-b/tree/2f5b8d1">rlvr-b-v1 <span class="mono">@2f5b8d1</span></a><small>weight: 0.3333333333333333</small></li></ul><h4>Outputs</h4><ul class="checkpoints"><li><a href="https://huggingface.co/example-org/soup-uniform/tree/6d2f8a4">soup-uniform-v1 <span class="mono">@6d2f8a4</span></a><small>math: 0.556, code: 0.491, chat: 7.3, safety: 0.934</small><small>Evaluation: <a href="https://github.com/example-org/evaluation/commit/d41e7aa">example-org/evaluation <span class="mono">@d41e7aa</span></a></small></li></ul><a class="source-link" href="rejected/exp-012-uniform-soup.yaml">View source YAML ↗</a></div></details><details class="record" id="record-exp-013" data-status="in_progress" data-search="exp-013 safety-focused preference optimisation improve refusal behaviour by applying safety preference optimisation to the final rlhf checkpoint. [&#x27;dpo&#x27;, &#x27;safety&#x27;] dpo ">
+<summary><div class="record-top"><span class="record-id">exp-013</span><span class="badge in_progress">in progress</span></div>
+<h3>Safety-focused preference optimisation</h3><p class="record-description">Improve refusal behaviour by applying safety preference optimisation to the final RLHF checkpoint.</p><div class="tags"><span class="tag" style="--tag-fill:#ccc4f3;--tag-ink:#3822a0">dpo</span><span class="tag" style="--tag-fill:#c4edf3;--tag-ink:#2290a0">safety</span></div><span class="inspect">Inspect record <span aria-hidden="true">↗</span></span></summary>
+<div class="record-body"><dl><dt>Method</dt><dd>dpo</dd><dt>Owner</dt><dd>Researcher B · researcher-b</dd><dt>Code</dt><dd><a href="https://github.com/example-org/training/commit/a2c7e49">example-org/training <span class="mono">@a2c7e49</span></a></dd><dt>file</dt><dd><code>configs/safety-dpo.yaml</code></dd><dt>cli</dt><dd><code>--seed 7</code></dd></dl>
+<h4>Inputs</h4><ul class="checkpoints"><li><a href="https://huggingface.co/example-org/rlhf2-v1/tree/1e6c8b4">rlhf2-v1 <span class="mono">@1e6c8b4</span></a><small></small></li></ul><h4>Outputs</h4><ul class="checkpoints"><li class="muted">No evaluated checkpoint yet</li></ul><p class="record-notes">Dataset review is scheduled before training begins.</p><a class="source-link" href="experiments/exp-013-safety-dpo.yaml">View source YAML ↗</a></div></details><details class="record" id="record-exp-014" data-status="in_progress" data-search="exp-014 unit-test reward ablation measure the contribution of reward shaping by continuing rlvr-a-v2 with binary unit-test rewards. [&#x27;rlvr&#x27;, &#x27;ablation&#x27;, &#x27;code&#x27;] rlvr ">
+<summary><div class="record-top"><span class="record-id">exp-014</span><span class="badge in_progress">in progress</span></div>
+<h3>Unit-test reward ablation</h3><p class="record-description">Measure the contribution of reward shaping by continuing rlvr-a-v2 with binary unit-test rewards.</p><div class="tags"><span class="tag" style="--tag-fill:#f3cec4;--tag-ink:#a03c22">rlvr</span><span class="tag" style="--tag-fill:#f2c4f3;--tag-ink:#9f22a0">ablation</span><span class="tag" style="--tag-fill:#c4f3c5;--tag-ink:#22a026">code</span></div><span class="inspect">Inspect record <span aria-hidden="true">↗</span></span></summary>
+<div class="record-body"><dl><dt>Method</dt><dd>rlvr</dd><dt>Owner</dt><dd>Researcher A · researcher-a</dd><dt>Code</dt><dd><a href="https://github.com/example-org/training/commit/b3d8f50">example-org/training <span class="mono">@b3d8f50</span></a></dd><dt>cli</dt><dd><code>--reward binary-unit-tests --seed 13</code></dd></dl>
+<h4>Inputs</h4><ul class="checkpoints"><li><a href="https://huggingface.co/example-org/rlvr-a/tree/8c2e4f6">rlvr-a-v2 <span class="mono">@8c2e4f6</span></a><small></small></li></ul><h4>Outputs</h4><ul class="checkpoints"><li class="muted">No evaluated checkpoint yet</li></ul><p class="record-notes">Awaiting a fix for flaky unit tests before producing an evaluated checkpoint.</p><a class="source-link" href="experiments/exp-014-reward-ablation.yaml">View source YAML ↗</a></div></details></div><p id="empty-results" class="empty" hidden>No experiments match these filters.</p></section>
+<section id="checkpoints" aria-labelledby="checkpoints-heading"><div class="section-head"><div><div class="section-kicker">Evaluation at a glance</div><h2 id="checkpoints-heading">Checkpoint scores</h2><p class="subtitle">Active checkpoints and their pinned evaluation code.</p></div></div><div class="panel"><div class="table-scroll"><table><thead><tr><th scope="col">Checkpoint</th><th scope="col">Produced by</th><th scope="col" class="numeric">chat</th><th scope="col" class="numeric">code</th><th scope="col" class="numeric">math</th><th scope="col" class="numeric">safety</th><th scope="col">Evaluation code</th></tr></thead><tbody><tr><th scope="row"><a href="https://huggingface.co/example-org/base-model/tree/0a1b2c3">base <span class="mono">@0a1b2c3</span></a></th><td>external</td><td class="numeric">5.1</td><td class="numeric">0.276</td><td class="numeric">0.301</td><td class="numeric">0.817</td><td><a href="https://github.com/example-org/evaluation/commit/d41e7aa">example-org/evaluation <span class="mono">@d41e7aa</span></a></td></tr><tr><th scope="row"><a href="https://huggingface.co/example-org/sft-v1/tree/5d2c7a1">sft-v1 <span class="mono">@5d2c7a1</span></a></th><td>exp-001</td><td class="numeric">6.8</td><td class="numeric">0.385</td><td class="numeric">0.412</td><td class="numeric">0.902</td><td><a href="https://github.com/example-org/evaluation/commit/d41e7aa">example-org/evaluation <span class="mono">@d41e7aa</span></a></td></tr><tr><th scope="row"><a href="https://huggingface.co/example-org/rlhf1-v1/tree/9e3f1b0">rlhf1-v1 <span class="mono">@9e3f1b0</span></a></th><td>exp-002</td><td class="numeric">7.3</td><td class="numeric">0.401</td><td class="numeric">0.437</td><td class="numeric">0.931</td><td><a href="https://github.com/example-org/evaluation/commit/d41e7aa">example-org/evaluation <span class="mono">@d41e7aa</span></a></td></tr><tr><th scope="row"><a href="https://huggingface.co/example-org/dpo-v1/tree/7b4a2d9">dpo-v1 <span class="mono">@7b4a2d9</span></a></th><td>exp-003</td><td class="numeric">7.6</td><td class="numeric">0.418</td><td class="numeric">0.455</td><td class="numeric">0.944</td><td><a href="https://github.com/example-org/evaluation/commit/d41e7aa">example-org/evaluation <span class="mono">@d41e7aa</span></a></td></tr><tr><th scope="row"><a href="https://huggingface.co/example-org/rlvr-a/tree/6a1c3e5">rlvr-a-v1 <span class="mono">@6a1c3e5</span></a></th><td>exp-004</td><td class="numeric">7.4</td><td class="numeric">0.502</td><td class="numeric">0.498</td><td class="numeric">0.938</td><td><a href="https://github.com/example-org/evaluation/commit/d41e7aa">example-org/evaluation <span class="mono">@d41e7aa</span></a></td></tr><tr><th scope="row"><a href="https://huggingface.co/example-org/rlvr-a/tree/8c2e4f6">rlvr-a-v2 <span class="mono">@8c2e4f6</span></a></th><td>exp-004</td><td class="numeric">7.3</td><td class="numeric">0.537</td><td class="numeric">0.531</td><td class="numeric">0.935</td><td><a href="https://github.com/example-org/evaluation/commit/d41e7aa">example-org/evaluation <span class="mono">@d41e7aa</span></a></td></tr><tr><th scope="row"><a href="https://huggingface.co/example-org/rlvr-b/tree/2f5b8d1">rlvr-b-v1 <span class="mono">@2f5b8d1</span></a></th><td>exp-005</td><td class="numeric">7.5</td><td class="numeric">0.441</td><td class="numeric">0.589</td><td class="numeric">0.941</td><td><a href="https://github.com/example-org/evaluation/commit/d41e7aa">example-org/evaluation <span class="mono">@d41e7aa</span></a></td></tr><tr><th scope="row"><a href="https://huggingface.co/example-org/soup-v1/tree/4c1d9e2">soup-v1 <span class="mono">@4c1d9e2</span></a></th><td>exp-006</td><td class="numeric">7.6</td><td class="numeric">0.548</td><td class="numeric">0.612</td><td class="numeric">0.946</td><td><a href="https://github.com/example-org/evaluation/commit/d41e7aa">example-org/evaluation <span class="mono">@d41e7aa</span></a></td></tr><tr><th scope="row"><a href="https://huggingface.co/example-org/opsd-v1/tree/3d7f9a2">opsd-v1 <span class="mono">@3d7f9a2</span></a></th><td>exp-007</td><td class="numeric">7.8</td><td class="numeric">0.556</td><td class="numeric">0.624</td><td class="numeric">0.948</td><td><a href="https://github.com/example-org/evaluation/commit/d41e7aa">example-org/evaluation <span class="mono">@d41e7aa</span></a></td></tr><tr><th scope="row"><a href="https://huggingface.co/example-org/rlhf2-v1/tree/1e6c8b4">rlhf2-v1 <span class="mono">@1e6c8b4</span></a></th><td>exp-008</td><td class="numeric">8.2</td><td class="numeric">0.553</td><td class="numeric">0.619</td><td class="numeric">0.963</td><td><a href="https://github.com/example-org/evaluation/commit/d41e7aa">example-org/evaluation <span class="mono">@d41e7aa</span></a></td></tr><tr><th scope="row"><a href="https://huggingface.co/example-org/rlvr-d/tree/3a6d8e1">rlvr-d-v1 <span class="mono">@3a6d8e1</span></a></th><td>exp-010</td><td class="numeric muted">—</td><td class="numeric">0.432</td><td class="numeric">0.573</td><td class="numeric muted">—</td><td><a href="https://github.com/example-org/evaluation/commit/d41e7aa">example-org/evaluation <span class="mono">@d41e7aa</span></a></td></tr></tbody></table></div><div class="table-note">— means a score has not been recorded. Rejected checkpoints remain in their experiment records.</div></div></section>
+<footer><span>Generated from the experiment YAML records.<br><a href="README.md">Repository guide</a> · <a href="docs/github_workflow.md">GitHub workflow</a></span><span>Node colours show tags. Arrow styles show experiment status.<br>Self-contained HTML · works offline · <a href="LINEAGE.md">View Markdown</a></span></footer>
+</main>
+<script>
+(() => {
+  'use strict';
+  const stage = document.getElementById('graph-stage');
+  const svg = document.getElementById('lineage-graph');
+  const label = document.getElementById('zoom-label');
+  const bounds = {width: Number(svg.dataset.width), height: Number(svg.dataset.height)};
+  let zoom = 1, x = 0, y = 0, drag = null, moved = false;
+  const size = () => ({width: stage.clientWidth || 1000, height: stage.clientHeight || 620});
+  function draw() {
+    const viewport = size();
+    svg.setAttribute('viewBox', `${x} ${y} ${viewport.width / zoom} ${viewport.height / zoom}`);
+    label.value = `${Math.round(zoom * 100)}%`;
+    document.getElementById('zoom-out').disabled = zoom <= 0.025;
+    document.getElementById('zoom-in').disabled = zoom >= 2.5;
+  }
+  function zoomAt(next, px = size().width / 2, py = size().height / 2) {
+    next = Math.max(0.025, Math.min(2.5, next));
+    x += px / zoom - px / next;
+    y += py / zoom - py / next;
+    zoom = next;
+    draw();
+  }
+  function fit() {
+    const viewport = size();
+    zoom = Math.max(0.025, Math.min(1, Math.min(viewport.width / bounds.width, viewport.height / bounds.height) * 0.94));
+    x = (bounds.width - viewport.width / zoom) / 2;
+    y = (bounds.height - viewport.height / zoom) / 2;
+    draw();
+  }
+  document.getElementById('zoom-in').addEventListener('click', () => zoomAt(zoom * 1.3));
+  document.getElementById('zoom-out').addEventListener('click', () => zoomAt(zoom / 1.3));
+  document.getElementById('fit-graph').addEventListener('click', fit);
+  document.getElementById('reset-graph').addEventListener('click', () => {zoom = 1; x = 0; y = 0; draw();});
+  stage.addEventListener('wheel', event => {
+    event.preventDefault();
+    const rect = stage.getBoundingClientRect();
+    zoomAt(zoom * Math.exp(-event.deltaY * 0.002), event.clientX - rect.left, event.clientY - rect.top);
+  }, {passive: false});
+  stage.addEventListener('pointerdown', event => {
+    if (event.button !== 0) return;
+    drag = {px: event.clientX, py: event.clientY, x, y}; moved = false;
+  });
+  window.addEventListener('pointermove', event => {
+    if (!drag) return;
+    const dx = event.clientX - drag.px, dy = event.clientY - drag.py;
+    if (Math.abs(dx) + Math.abs(dy) > 5) moved = true;
+    if (moved) {x = drag.x - dx / zoom; y = drag.y - dy / zoom; stage.classList.add('dragging'); draw();}
+  });
+  window.addEventListener('pointerup', () => {drag = null; stage.classList.remove('dragging');});
+  window.addEventListener('pointercancel', () => {drag = null; stage.classList.remove('dragging');});
+  stage.addEventListener('keydown', event => {
+    if (event.target !== stage) return;
+    if (event.key === '+' || event.key === '=') zoomAt(zoom * 1.3);
+    else if (event.key === '-') zoomAt(zoom / 1.3);
+    else if (event.key === '0') fit();
+    else if (event.key === 'ArrowLeft') x -= 90 / zoom;
+    else if (event.key === 'ArrowRight') x += 90 / zoom;
+    else if (event.key === 'ArrowUp') y -= 90 / zoom;
+    else if (event.key === 'ArrowDown') y += 90 / zoom;
+    else return;
+    event.preventDefault(); draw();
+  });
+  const records = [...document.querySelectorAll('.record')];
+  const search = document.getElementById('search');
+  const status = document.getElementById('status-filter');
+  function filter() {
+    const query = search.value.trim().toLowerCase();
+    let count = 0;
+    records.forEach(record => {
+      record.hidden = !(record.dataset.search.includes(query) && (status.value === 'all' || record.dataset.status === status.value));
+      if (!record.hidden) count++;
+    });
+    document.getElementById('result-count').textContent = `${count} of ${records.length} experiments`;
+    document.getElementById('empty-results').hidden = count > 0;
+  }
+  search.addEventListener('input', filter);
+  status.addEventListener('change', filter);
+  function inspect(node) {
+    const record = document.getElementById(`record-${node.dataset.record}`);
+    if (!record) return;
+    search.value = ''; status.value = 'all'; filter(); record.open = true;
+    record.scrollIntoView({block: 'center'});
+    record.querySelector('summary').focus({preventScroll: true});
+  }
+  svg.querySelectorAll('[data-record]').forEach(node => {
+    node.addEventListener('click', () => {if (!moved) inspect(node);});
+    node.addEventListener('keydown', event => {if (event.key === 'Enter' || event.key === ' ') {event.preventDefault(); inspect(node);}});
+  });
+  document.getElementById('download-svg').addEventListener('click', () => {
+    const copy = svg.cloneNode(true);
+    copy.setAttribute('viewBox', `0 0 ${bounds.width} ${bounds.height}`);
+    copy.setAttribute('width', bounds.width); copy.setAttribute('height', bounds.height);
+    copy.style.background = '#f8fafc';
+    const url = URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(copy)], {type: 'image/svg+xml'}));
+    const link = document.createElement('a'); link.href = url; link.download = 'lineage.svg';
+    document.body.appendChild(link); link.click(); link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
+  window.addEventListener('resize', draw);
+  filter(); fit();
+})();
+</script>
+</body>
+</html>

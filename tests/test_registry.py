@@ -4,6 +4,8 @@ import re
 import shutil
 import subprocess
 import sys
+import xml.etree.ElementTree as ET
+from html.parser import HTMLParser
 from pathlib import Path
 
 import pytest
@@ -466,19 +468,71 @@ def test_graph_includes_every_aggregation_input():
         assert mid in graph
 
 
+def test_html_contains_all_records_and_offline_svg_with_status_edges():
+    rejected = registry.load_rejected()
+    doc = registry.render_html(CONFIG, EXPERIMENTS, rejected)
+    svg_source = re.search(r"<svg .*?</svg>", doc, flags=re.DOTALL)[0]
+    svg = ET.fromstring(svg_source)
+    ns = {"s": "http://www.w3.org/2000/svg"}
+    nodes = svg.findall('.//s:g[@data-record]', ns)
+    assert {node.attrib["data-record"] for node in nodes} == {exp["id"] for exp in EXPERIMENTS + rejected}
+    edges = svg.findall('.//s:path[@class="graph-edge"]', ns)
+    for status, colour in {"accepted": "#168654", "rejected": "#d34a4a", "in_progress": "#64748b"}.items():
+        styled = [edge for edge in edges if edge.attrib["data-status"] == status]
+        assert styled and all(edge.attrib["stroke"] == colour for edge in styled)
+        assert all(("stroke-dasharray" in edge.attrib) == (status == "in_progress") for edge in styled)
+    assert "weight: 0.3333333333333333" not in svg_source
+    assert "weight: 0.333" in svg_source
+    assert "weight: 0.3333333333333333" in doc  # Record details retain full precision.
+    for exp in EXPERIMENTS + rejected:
+        assert f'id="record-{exp["id"]}"' in doc
+        if exp.get("reject_reason"):
+            assert exp["reject_reason"] in doc
+    tbody = doc.split("<tbody>")[1].split("</tbody>")[0]
+    assert "soup-uniform-v1" not in tbody and "rlvr-c-v1" not in tbody
+    assert "class=\"numeric muted\">—" in tbody
+    assert '<script src=' not in doc and 'import mermaid' not in doc
+
+
+def test_html_escapes_metadata_and_does_not_interpret_template_tokens():
+    experiments = copy.deepcopy(EXPERIMENTS)
+    payload = '</script><script>alert("x")</script>'
+    experiments[0]["title"] = payload
+    experiments[0]["description"] = payload
+    doc = registry.render_html({**CONFIG, "project_name": "Project @@GRAPH@@"}, experiments)
+    class ScriptCounter(HTMLParser):
+        scripts = 0
+        def handle_starttag(self, tag, attrs):
+            if tag == "script":
+                self.scripts += 1
+    parser = ScriptCounter()
+    parser.feed(doc)
+    assert parser.scripts == 1
+    assert payload not in doc
+    assert '&lt;/script&gt;&lt;script&gt;alert(&quot;x&quot;)' in doc
+    assert '<h1>Project @@GRAPH@@</h1>' in doc
+
+
+def test_empty_registry_has_usable_html():
+    doc = registry.render_html(CONFIG, [])
+    assert '<tbody></tbody>' in doc
+    assert 'id="empty-results"' in doc
+    assert 'data-width="440"' in doc
+    assert not re.search(r"@@(?:PROJECT|RECORDS|ROWS)@@", doc)
+
+
 def test_workflow_reads_config_and_publishes_on_custom_branch(tmp_path):
     workflow = yaml.safe_load((registry.ROOT / ".github/workflows/registry.yml").read_text())
     steps = workflow["jobs"]["registry"]["steps"]
     config_step = next(step for step in steps if step.get("id") == "config")
-    publish = next(step for step in steps if step.get("name") == "Regenerate LINEAGE.md")
+    publish = next(step for step in steps if step.get("name") == "Publish lineage")
     assert "steps.config.outputs.main_branch" in publish["if"]
     assert "github.event_name == 'push'" in publish["if"]
     assert workflow["on"]["push"] is None  # No hard-coded branch filter.
 
     repo = tmp_path / "repo"
     repo.mkdir()
-    (repo / "scripts").mkdir()
-    shutil.copy(registry.ROOT / "scripts/registry.py", repo / "scripts/registry.py")
+    shutil.copytree(registry.ROOT / "scripts", repo / "scripts", ignore=shutil.ignore_patterns("__pycache__"))
     shutil.copytree(registry.ROOT / "experiments", repo / "experiments")
     shutil.copytree(registry.ROOT / "rejected", repo / "rejected")
     branch = "release/latest"
@@ -513,7 +567,8 @@ def test_workflow_reads_config_and_publishes_on_custom_branch(tmp_path):
     assert "**Main branch:** `release/latest`" in (repo / "LINEAGE.md").read_text()
     head = git("rev-parse", "HEAD")
     assert git("rev-parse", f"refs/remotes/origin/{branch}") == head
-    assert git("show", "--pretty=", "--name-only", "HEAD") == "LINEAGE.md"
+    assert "<title>Test project · Model lineage</title>" in (repo / "LINEAGE.html").read_text()
+    assert set(git("show", "--pretty=", "--name-only", "HEAD").splitlines()) == {"LINEAGE.md", "LINEAGE.html"}
     # A subsequent publication with identical metadata creates no extra commit.
     subprocess.run(["bash", "-e", "-c", publish["run"]], cwd=repo, env=env, check=True, capture_output=True)
     assert git("rev-parse", "HEAD") == head

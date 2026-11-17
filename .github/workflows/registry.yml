@@ -29,6 +29,29 @@ jobs:
         if: github.event_name == 'pull_request'
         run: cat "$RUNNER_TEMP/lineage.md" >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Generate HTML preview
+        if: github.event_name == 'pull_request'
+        run: python scripts/registry.py
+
+      - name: Upload lineage preview
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v7
+        with:
+          name: lineage-preview
+          include-hidden-files: true
+          path: |
+            LINEAGE.html
+            LINEAGE.md
+            config.yaml
+            README.md
+            experiments/*.yaml
+            rejected/*.yaml
+            docs/github_workflow.md
+            .github/workflows/registry.yml
+            scripts/registry.py
+            scripts/lineage_html.py
+            scripts/templates/lineage.html
+
       - name: Read project configuration
         id: config
         run: |
@@ -39,15 +62,16 @@ jobs:
           print(f"main_branch={config['main_branch']}")
           PY
 
-      - name: Regenerate LINEAGE.md
+      - name: Publish lineage
         if: github.event_name == 'push' && github.ref == format('refs/heads/{0}', steps.config.outputs.main_branch)
         env:
           MAIN_BRANCH: ${{ steps.config.outputs.main_branch }}
         run: |
           python scripts/registry.py
-          if ! git diff --quiet -- LINEAGE.md; then
+          git add -- LINEAGE.md LINEAGE.html
+          if ! git diff --cached --quiet -- LINEAGE.md LINEAGE.html; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git commit -m "Regenerate LINEAGE.md" -- LINEAGE.md
+            git commit -m "Regenerate lineage views" -- LINEAGE.md LINEAGE.html
             git push origin "HEAD:refs/heads/$MAIN_BRANCH"
           fi

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Validate the experiment registry and compile it into LINEAGE.md.
+"""Validate the experiment registry and compile Markdown and HTML lineage views.
 
 Usage:
-    python scripts/registry.py           # validate, then write LINEAGE.md
+    python scripts/registry.py           # validate, then write LINEAGE.md and LINEAGE.html
     python scripts/registry.py --check   # validate, then print the document to stdout
 """
 from __future__ import annotations
@@ -17,6 +17,7 @@ import sys
 from pathlib import Path
 
 import yaml
+import lineage_html
 
 ROOT = Path(__file__).resolve().parent.parent
 STATUSES = ("in_progress", "accepted", "rejected")
@@ -237,6 +238,13 @@ def _metadata(mapping: dict) -> str:
     )
 
 
+def _diagram_metadata(mapping: dict) -> str:
+    return _metadata({
+        key: round(value, 3) if key == "weight" and isinstance(value, float) else value
+        for key, value in mapping.items()
+    })
+
+
 def _table_text(value: str) -> str:
     value = html.escape(value, quote=False).replace("|", "&#124;").replace("`", "&#96;")
     return value.replace("\r\n", "\n").replace("\r", "\n").replace("\n", "<br/>")
@@ -336,7 +344,7 @@ def render_mermaid(config: dict, experiments: list[dict], rejected: list[dict] |
         lines.append(f'  {_node(eid)}("<b>{eid}</b>{tag_label}{method}<br/>{status.replace("_", " ")}<br/><small>{code}</small>")')
         classify(eid, tags)
         for inp in exp["inputs"]:
-            parameters = _metadata(inp.get("parameters", {}))
+            parameters = _diagram_metadata(inp.get("parameters", {}))
             label = f'|"{_mermaid_text(parameters)}"|' if parameters else ""
             edge(inp["model"], eid, status, label)
         for out in exp.get("outputs") or []:
@@ -409,6 +417,9 @@ def render(config: dict, experiments: list[dict], rejected: list[dict] | None = 
         "",
         f"**Main branch:** `{config['main_branch']}`",
         "",
+        "[Open the interactive HTML view](LINEAGE.html) for zoom, pan and searchable experiment records. "
+        "Download it or open it from a local checkout in a browser.",
+        "",
         "```mermaid",
         render_mermaid(config, experiments, rejected),
         "```",
@@ -471,6 +482,18 @@ def render(config: dict, experiments: list[dict], rejected: list[dict] | None = 
     return "\n".join(doc) + "\n"
 
 
+def render_html(config: dict, experiments: list[dict], rejected: list[dict] | None = None) -> str:
+    rejected = rejected or []
+    return lineage_html.render(
+        config, experiments, rejected,
+        bases=external_models(experiments),
+        all_bases=external_models(experiments + rejected),
+        palette=_tag_styles(experiments + rejected),
+        format_parameters=_diagram_metadata,
+        format_metadata=_metadata,
+    )
+
+
 def main(argv: list[str]) -> int:
     config, experiments = load()
     rejected = load_rejected()
@@ -484,8 +507,10 @@ def main(argv: list[str]) -> int:
     if "--check" in argv:
         print(document)
     else:
+        html_document = render_html(config, experiments, rejected)
         (ROOT / "LINEAGE.md").write_text(document)
-        print(f"Wrote LINEAGE.md ({len(experiments)} experiments, {len(rejected)} rejected)")
+        (ROOT / "LINEAGE.html").write_text(html_document)
+        print(f"Wrote LINEAGE.md and LINEAGE.html ({len(experiments)} experiments, {len(rejected)} rejected)")
     return 0
 
 

@@ -4,6 +4,8 @@
 
 **Main branch:** `main`
 
+[Open the interactive HTML view](LINEAGE.html) for zoom, pan and searchable experiment records. Download it or open it from a local checkout in a browser.
+
 ```mermaid
 ---
 config:
@@ -81,9 +83,9 @@ flowchart LR
   rlvr_c_v1(["rlvr-c-v1<br/>@5a9d1f3"])
   exp_009 --> rlvr_c_v1
   exp_012("<b>exp-012</b><br/><small>weight_aggregation, souping, ablation</small><br/>weighted_average<br/>rejected<br/><small>example-org/merging@8f3a21c</small>")
-  rlvr_a_v1 -->|"weight: 0.3333333333333333"| exp_012
-  rlvr_a_v2 -->|"weight: 0.3333333333333333"| exp_012
-  rlvr_b_v1 -->|"weight: 0.3333333333333333"| exp_012
+  rlvr_a_v1 -->|"weight: 0.333"| exp_012
+  rlvr_a_v2 -->|"weight: 0.333"| exp_012
+  rlvr_b_v1 -->|"weight: 0.333"| exp_012
   soup_uniform_v1(["soup-uniform-v1<br/>@6d2f8a4"])
   exp_012 --> soup_uniform_v1
   subgraph tag_legend["Tags"]

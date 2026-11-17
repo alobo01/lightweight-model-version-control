@@ -5,7 +5,8 @@ of the work, such as supervised fine-tuning, preference optimisation, reinforcem
 merging or evaluation. Keeping a project's metadata up to date is hard when it is
 scattered across repositories, chats and spreadsheets. This repository is a template that teams can share
 to organise and track model training while adding as little documentation burden as possible.
-It also provides a GitHub Actions workflow that generates a lineage graph and summary in `LINEAGE.md`.
+It also provides a GitHub Actions workflow that generates [`LINEAGE.md`](LINEAGE.md) and an
+interactive [`LINEAGE.html`](LINEAGE.html) companion.
 
 The [generated demo lineage](LINEAGE.md) shows a complete training chain, branching RLVR runs,
 weighted souping, multiple tags, in-progress experiments and rejected alternatives.
@@ -176,7 +177,7 @@ automatically. No local installation, compilation or tag registration is needed.
    its pinned Hugging Face revision, evaluation repository and commit, and benchmark scores to the experiment file.
    Commit and push those updates to the same branch to update the pull request.
 3. Review the GitHub Actions checks and lineage preview in the workflow summary, then merge the
-   pull request. GitHub Actions regenerates and commits `LINEAGE.md` automatically on `main_branch`.
+   pull request. GitHub Actions regenerates and commits `LINEAGE.md` and `LINEAGE.html` automatically on `main_branch`.
 
 Tags need no predefined vocabulary or colour configuration. Each distinct tag gets a different
 automatically generated colour and an entry in the graph legend. For multiple tags, the first
@@ -196,7 +197,7 @@ experiment is an external checkpoint; include its Hugging Face repository and re
 You can also record its evaluation code and scores on the input. Benchmark columns are collected
 from recorded scores, with `–` for missing values.
 
-See [CI_CD.md](docs/github_workflow/CI_CD.md) for the GitHub validation and publication workflow.
+See [github_workflow.md](docs/github_workflow.md) for the GitHub validation and publication workflow.
 
 ## Rejecting an experiment
 
@@ -228,10 +229,14 @@ experiments to `rejected/` too, or update their inputs.
 ## Compiling the lineage
 
 The registry compiles [`LINEAGE.md`](LINEAGE.md) from `config.yaml`, `experiments/` and `rejected/`.
-It includes a graph, code versions and checkpoint scores. Ancestry comes from the declared inputs
-and outputs; experiments are listed by ID. GitHub Actions validates and publishes it automatically.
-See [CI_CD.md](docs/github_workflow/CI_CD.md) for the workflow, permissions and optional local checks.
-Do not edit `LINEAGE.md` by hand.
+Both views include lineage, code versions and checkpoint scores. Ancestry comes from the declared
+inputs and outputs; experiments are listed by ID. GitHub Actions validates and publishes them automatically.
+See [github_workflow.md](docs/github_workflow.md) for the workflow, permissions and optional local checks.
+Open `LINEAGE.html` from your local checkout in a browser for the interactive version: zoom and
+pan the graph, download it as SVG, inspect experiment records, and search or filter by status.
+The page works offline. On pull requests, download the **lineage-preview** artifact from the
+GitHub Actions run, extract it and open `LINEAGE.html`. GitHub's file view displays HTML source.
+Do not edit the generated files by hand.
 
 ## Repository layout
 
@@ -241,9 +246,10 @@ experiments/           one YAML file per active experiment
 rejected/              rejected experiment YAML files (status: rejected)
 scripts/registry.py    validator and graph compiler
 tests/                 validator tests
-.github/               workflow and pull request template
-LINEAGE.md             generated output
-docs/github_workflow/  GitHub automation, validation and optional local checks
+.github/               GitHub Actions workflow
+LINEAGE.md             generated Markdown lineage
+LINEAGE.html           generated interactive HTML lineage
+docs/                  workflow documentation
 ```
 
 ## Citation
