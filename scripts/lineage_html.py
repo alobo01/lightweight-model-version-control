@@ -79,7 +79,7 @@ def graph_svg(experiments: list[dict], bases: list[dict], palette: dict, format_
 
     svg = [f'<svg id="lineage-graph" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" data-width="{width}" data-height="{height}" role="img" aria-labelledby="graph-title graph-description">',
            '<title id="graph-title">Experiment lineage</title>',
-           '<desc id="graph-description">Nodes show checkpoints and experiments. Green arrows are accepted, red rejected, and dashed arrows in progress. Select an experiment to inspect its record.</desc>',
+           '<desc id="graph-description">Cylinders show checkpoints; rounded rectangles show experiments. Green arrows are accepted, red rejected, and dashed arrows in progress. Select an experiment to inspect its record.</desc>',
            '<defs>']
     for status, colour in COLOURS.items():
         svg.append(f'<marker id="arrow-{status}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="{colour}"/></marker>')
@@ -102,9 +102,13 @@ def graph_svg(experiments: list[dict], bases: list[dict], palette: dict, format_
         fill, stroke = palette[tags[0]][1:] if tags else ("#ffffff", "#cbd5e1")
         exp = node.get("experiment")
         activation = f' data-record="{esc(nid)}" tabindex="0" role="button" aria-label="Inspect {esc(nid)}"' if exp else ""
-        svg.append(f'<g class="graph-node" transform="translate({x},{y})"{activation}><title>{esc(exp["title"] if exp else nid)}</title>')
-        svg.append(f'<rect width="280" height="144" rx="{16 if exp else 30}" fill="{fill}" stroke="{stroke}" stroke-width="1.5"/>')
-        svg.append(f'<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">{esc(textwrap.shorten(nid, 25, placeholder="…"))}</text>')
+        svg.append(f'<g class="graph-node" data-kind="{node["kind"]}" transform="translate({x},{y})"{activation}><title>{esc(exp["title"] if exp else nid)}</title>')
+        if exp:
+            svg.append(f'<rect width="280" height="144" rx="16" fill="{fill}" stroke="{stroke}" stroke-width="1.5"/>')
+        else:
+            svg.append(f'<path d="M0 18 A140 18 0 0 1 280 18 V126 A140 18 0 0 1 0 126 Z" fill="{fill}" stroke="{stroke}" stroke-width="1.5"/>')
+            svg.append(f'<ellipse cx="140" cy="18" rx="140" ry="18" fill="{fill}" stroke="{stroke}" stroke-width="1.5"/>')
+        svg.append(f'<text x="20" y="{30 if exp else 57}" fill="#172e3d" font-size="18" font-weight="700">{esc(textwrap.shorten(nid, 25, placeholder="…"))}</text>')
         if exp:
             for index, line in enumerate(textwrap.wrap(exp["title"], width=29)[:2]):
                 svg.append(f'<text x="20" y="{56+index*19}" fill="#334d5c" font-size="15">{esc(line)}</text>')
@@ -112,8 +116,8 @@ def graph_svg(experiments: list[dict], bases: list[dict], palette: dict, format_
             svg.append(f'<text x="20" y="130" fill="#475569" font-size="11">{esc(textwrap.shorten(", ".join(tags), 38, placeholder="…"))}</text>')
         else:
             model = node["model"]
-            svg.append(f'<text x="20" y="59" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="83" fill="#334d5c" font-size="15">@{esc(textwrap.shorten(str(model["hf"]["revision"]), 24, placeholder="…"))}</text>')
-            svg.append(f'<text x="20" y="112" fill="#64748b" font-size="11">{esc(textwrap.shorten(model["hf"]["repo"], 36, placeholder="…"))}</text>')
+            svg.append(f'<text x="20" y="78" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="102" fill="#334d5c" font-size="15">@{esc(textwrap.shorten(str(model["hf"]["revision"]), 24, placeholder="…"))}</text>')
+            svg.append(f'<text x="20" y="123" fill="#64748b" font-size="11">{esc(textwrap.shorten(model["hf"]["repo"], 36, placeholder="…"))}</text>')
         svg.append('</g>')
     svg += ['</g>', '</svg>']
     return "\n".join(svg)

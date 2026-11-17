@@ -17,6 +17,7 @@
 @media(max-width:1000px){.record-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.shell{padding:0 24px}.panel-head{align-items:flex-start;flex-direction:column}.section-head{align-items:flex-start;flex-direction:column}}
 @media(max-width:640px){.shell{padding:0 16px}.topbar .shell{min-height:62px}nav{gap:12px;font-size:11px}.brand{font-size:10px}.hero{padding-top:30px}.hero-bottom{align-items:flex-start;flex-direction:column}.stats{grid-template-columns:repeat(2,1fr);gap:10px}.stat{padding:16px}.stat strong{font-size:28px}.record-grid{grid-template-columns:1fr}.filters{flex-wrap:wrap;width:100%}.filters input{min-width:0;flex:1}.graph-stage{height:480px}.graph-toolbar{padding:12px}.hint{display:none}.tags-footer{padding:16px;flex-direction:column;gap:8px}footer{flex-direction:column;gap:8px}.status-key{gap:12px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+.shape-key{display:flex;align-items:center;gap:24px;flex-wrap:wrap;padding:15px 24px 0;color:var(--muted);font-size:11px}.shape-key span{display:inline-flex;align-items:center;gap:8px}.shape-icon{display:inline-block;width:23px;height:16px;border:1.5px solid #8298a5;background:#edf3f6;border-radius:4px}.shape-icon.checkpoint{position:relative;height:18px;border-radius:50% / 22%}.shape-icon.checkpoint:before{content:"";position:absolute;left:-1.5px;right:-1.5px;top:-1.5px;height:6px;border:1.5px solid #8298a5;border-radius:50%;background:#edf3f6}
 </style>
 </head>
 <body>
@@ -28,7 +29,7 @@
 <div class="graph-toolbar"><div class="tools"><button id="zoom-out" aria-label="Zoom out">−</button><output id="zoom-label" class="zoom-label" aria-live="polite">100%</output><button id="zoom-in" aria-label="Zoom in">+</button><button id="fit-graph">Fit</button><button id="reset-graph">100%</button></div><span class="hint">Drag to pan · scroll to zoom</span><button id="download-svg">Download SVG ↗</button></div>
 <div class="graph-stage" id="graph-stage" tabindex="0" aria-label="Interactive lineage. Use arrow keys to pan, plus or minus to zoom, and zero to fit."><svg id="lineage-graph" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6140 1050" data-width="6140" data-height="1050" role="img" aria-labelledby="graph-title graph-description">
 <title id="graph-title">Experiment lineage</title>
-<desc id="graph-description">Nodes show checkpoints and experiments. Green arrows are accepted, red rejected, and dashed arrows in progress. Select an experiment to inspect its record.</desc>
+<desc id="graph-description">Cylinders show checkpoints; rounded rectangles show experiments. Green arrows are accepted, red rejected, and dashed arrows in progress. Select an experiment to inspect its record.</desc>
 <defs>
 <marker id="arrow-accepted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#168654"/></marker>
 <marker id="arrow-rejected" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#d34a4a"/></marker>
@@ -70,13 +71,14 @@
 <path class="graph-edge" data-status="rejected" d="M3740,502.0 C3790.0,502.0 3790.0,597.0 3840,597.0" stroke="#d34a4a" stroke-width="3" fill="none" marker-end="url(#arrow-rejected)"/>
 <path class="graph-edge" data-status="in_progress" d="M5640,502.0 C5690.0,502.0 5690.0,502.0 5740,502.0" stroke="#64748b" stroke-width="3" fill="none" stroke-dasharray="9 7" marker-end="url(#arrow-in_progress)"/>
 <path class="graph-edge" data-status="in_progress" d="M3360,312.0 C3410.0,312.0 3410.0,692.0 3460,692.0" stroke="#64748b" stroke-width="3" fill="none" stroke-dasharray="9 7" marker-end="url(#arrow-in_progress)"/>
-<g class="graph-node" transform="translate(40,430.0)"><title>base</title>
-<rect width="280" height="144" rx="30" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
-<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">base</text>
-<text x="20" y="59" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="83" fill="#334d5c" font-size="15">@0a1b2c3</text>
-<text x="20" y="112" fill="#64748b" font-size="11">example-org/base-model</text>
+<g class="graph-node" data-kind="model" transform="translate(40,430.0)"><title>base</title>
+<path d="M0 18 A140 18 0 0 1 280 18 V126 A140 18 0 0 1 0 126 Z" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+<ellipse cx="140" cy="18" rx="140" ry="18" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+<text x="20" y="57" fill="#172e3d" font-size="18" font-weight="700">base</text>
+<text x="20" y="78" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="102" fill="#334d5c" font-size="15">@0a1b2c3</text>
+<text x="20" y="123" fill="#64748b" font-size="11">example-org/base-model</text>
 </g>
-<g class="graph-node" transform="translate(420,430.0)" data-record="exp-001" tabindex="0" role="button" aria-label="Inspect exp-001"><title>Supervised fine-tuning on the instruction set</title>
+<g class="graph-node" data-kind="experiment" transform="translate(420,430.0)" data-record="exp-001" tabindex="0" role="button" aria-label="Inspect exp-001"><title>Supervised fine-tuning on the instruction set</title>
 <rect width="280" height="144" rx="16" fill="#e8f3c4" stroke="#82a022" stroke-width="1.5"/>
 <text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">exp-001</text>
 <text x="20" y="56" fill="#334d5c" font-size="15">Supervised fine-tuning on the</text>
@@ -84,26 +86,28 @@
 <circle cx="24" cy="105" r="4" fill="#168654"/><text x="35" y="110" fill="#475569" font-size="13">accepted</text>
 <text x="20" y="130" fill="#475569" font-size="11">sft</text>
 </g>
-<g class="graph-node" transform="translate(800,430.0)"><title>sft-v1</title>
-<rect width="280" height="144" rx="30" fill="#e8f3c4" stroke="#82a022" stroke-width="1.5"/>
-<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">sft-v1</text>
-<text x="20" y="59" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="83" fill="#334d5c" font-size="15">@5d2c7a1</text>
-<text x="20" y="112" fill="#64748b" font-size="11">example-org/sft-v1</text>
+<g class="graph-node" data-kind="model" transform="translate(800,430.0)"><title>sft-v1</title>
+<path d="M0 18 A140 18 0 0 1 280 18 V126 A140 18 0 0 1 0 126 Z" fill="#e8f3c4" stroke="#82a022" stroke-width="1.5"/>
+<ellipse cx="140" cy="18" rx="140" ry="18" fill="#e8f3c4" stroke="#82a022" stroke-width="1.5"/>
+<text x="20" y="57" fill="#172e3d" font-size="18" font-weight="700">sft-v1</text>
+<text x="20" y="78" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="102" fill="#334d5c" font-size="15">@5d2c7a1</text>
+<text x="20" y="123" fill="#64748b" font-size="11">example-org/sft-v1</text>
 </g>
-<g class="graph-node" transform="translate(1180,430.0)" data-record="exp-002" tabindex="0" role="button" aria-label="Inspect exp-002"><title>First RLHF round</title>
+<g class="graph-node" data-kind="experiment" transform="translate(1180,430.0)" data-record="exp-002" tabindex="0" role="button" aria-label="Inspect exp-002"><title>First RLHF round</title>
 <rect width="280" height="144" rx="16" fill="#d9f3c4" stroke="#5ba022" stroke-width="1.5"/>
 <text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">exp-002</text>
 <text x="20" y="56" fill="#334d5c" font-size="15">First RLHF round</text>
 <circle cx="24" cy="105" r="4" fill="#168654"/><text x="35" y="110" fill="#475569" font-size="13">accepted</text>
 <text x="20" y="130" fill="#475569" font-size="11">rlhf1</text>
 </g>
-<g class="graph-node" transform="translate(1560,430.0)"><title>rlhf1-v1</title>
-<rect width="280" height="144" rx="30" fill="#d9f3c4" stroke="#5ba022" stroke-width="1.5"/>
-<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">rlhf1-v1</text>
-<text x="20" y="59" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="83" fill="#334d5c" font-size="15">@9e3f1b0</text>
-<text x="20" y="112" fill="#64748b" font-size="11">example-org/rlhf1-v1</text>
+<g class="graph-node" data-kind="model" transform="translate(1560,430.0)"><title>rlhf1-v1</title>
+<path d="M0 18 A140 18 0 0 1 280 18 V126 A140 18 0 0 1 0 126 Z" fill="#d9f3c4" stroke="#5ba022" stroke-width="1.5"/>
+<ellipse cx="140" cy="18" rx="140" ry="18" fill="#d9f3c4" stroke="#5ba022" stroke-width="1.5"/>
+<text x="20" y="57" fill="#172e3d" font-size="18" font-weight="700">rlhf1-v1</text>
+<text x="20" y="78" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="102" fill="#334d5c" font-size="15">@9e3f1b0</text>
+<text x="20" y="123" fill="#64748b" font-size="11">example-org/rlhf1-v1</text>
 </g>
-<g class="graph-node" transform="translate(1940,430.0)" data-record="exp-003" tabindex="0" role="button" aria-label="Inspect exp-003"><title>Preference optimisation on curated pairs</title>
+<g class="graph-node" data-kind="experiment" transform="translate(1940,430.0)" data-record="exp-003" tabindex="0" role="button" aria-label="Inspect exp-003"><title>Preference optimisation on curated pairs</title>
 <rect width="280" height="144" rx="16" fill="#ccc4f3" stroke="#3822a0" stroke-width="1.5"/>
 <text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">exp-003</text>
 <text x="20" y="56" fill="#334d5c" font-size="15">Preference optimisation on</text>
@@ -111,45 +115,49 @@
 <circle cx="24" cy="105" r="4" fill="#168654"/><text x="35" y="110" fill="#475569" font-size="13">accepted</text>
 <text x="20" y="130" fill="#475569" font-size="11">dpo</text>
 </g>
-<g class="graph-node" transform="translate(2320,430.0)"><title>dpo-v1</title>
-<rect width="280" height="144" rx="30" fill="#ccc4f3" stroke="#3822a0" stroke-width="1.5"/>
-<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">dpo-v1</text>
-<text x="20" y="59" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="83" fill="#334d5c" font-size="15">@7b4a2d9</text>
-<text x="20" y="112" fill="#64748b" font-size="11">example-org/dpo-v1</text>
+<g class="graph-node" data-kind="model" transform="translate(2320,430.0)"><title>dpo-v1</title>
+<path d="M0 18 A140 18 0 0 1 280 18 V126 A140 18 0 0 1 0 126 Z" fill="#ccc4f3" stroke="#3822a0" stroke-width="1.5"/>
+<ellipse cx="140" cy="18" rx="140" ry="18" fill="#ccc4f3" stroke="#3822a0" stroke-width="1.5"/>
+<text x="20" y="57" fill="#172e3d" font-size="18" font-weight="700">dpo-v1</text>
+<text x="20" y="78" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="102" fill="#334d5c" font-size="15">@7b4a2d9</text>
+<text x="20" y="123" fill="#64748b" font-size="11">example-org/dpo-v1</text>
 </g>
-<g class="graph-node" transform="translate(2700,145.0)" data-record="exp-004" tabindex="0" role="button" aria-label="Inspect exp-004"><title>RLVR with unit-test rewards</title>
+<g class="graph-node" data-kind="experiment" transform="translate(2700,145.0)" data-record="exp-004" tabindex="0" role="button" aria-label="Inspect exp-004"><title>RLVR with unit-test rewards</title>
 <rect width="280" height="144" rx="16" fill="#f3cec4" stroke="#a03c22" stroke-width="1.5"/>
 <text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">exp-004</text>
 <text x="20" y="56" fill="#334d5c" font-size="15">RLVR with unit-test rewards</text>
 <circle cx="24" cy="105" r="4" fill="#168654"/><text x="35" y="110" fill="#475569" font-size="13">accepted</text>
 <text x="20" y="130" fill="#475569" font-size="11">rlvr, code</text>
 </g>
-<g class="graph-node" transform="translate(3080,50.0)"><title>rlvr-a-v1</title>
-<rect width="280" height="144" rx="30" fill="#f3cec4" stroke="#a03c22" stroke-width="1.5"/>
-<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">rlvr-a-v1</text>
-<text x="20" y="59" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="83" fill="#334d5c" font-size="15">@6a1c3e5</text>
-<text x="20" y="112" fill="#64748b" font-size="11">example-org/rlvr-a</text>
+<g class="graph-node" data-kind="model" transform="translate(3080,50.0)"><title>rlvr-a-v1</title>
+<path d="M0 18 A140 18 0 0 1 280 18 V126 A140 18 0 0 1 0 126 Z" fill="#f3cec4" stroke="#a03c22" stroke-width="1.5"/>
+<ellipse cx="140" cy="18" rx="140" ry="18" fill="#f3cec4" stroke="#a03c22" stroke-width="1.5"/>
+<text x="20" y="57" fill="#172e3d" font-size="18" font-weight="700">rlvr-a-v1</text>
+<text x="20" y="78" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="102" fill="#334d5c" font-size="15">@6a1c3e5</text>
+<text x="20" y="123" fill="#64748b" font-size="11">example-org/rlvr-a</text>
 </g>
-<g class="graph-node" transform="translate(3080,240.0)"><title>rlvr-a-v2</title>
-<rect width="280" height="144" rx="30" fill="#f3cec4" stroke="#a03c22" stroke-width="1.5"/>
-<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">rlvr-a-v2</text>
-<text x="20" y="59" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="83" fill="#334d5c" font-size="15">@8c2e4f6</text>
-<text x="20" y="112" fill="#64748b" font-size="11">example-org/rlvr-a</text>
+<g class="graph-node" data-kind="model" transform="translate(3080,240.0)"><title>rlvr-a-v2</title>
+<path d="M0 18 A140 18 0 0 1 280 18 V126 A140 18 0 0 1 0 126 Z" fill="#f3cec4" stroke="#a03c22" stroke-width="1.5"/>
+<ellipse cx="140" cy="18" rx="140" ry="18" fill="#f3cec4" stroke="#a03c22" stroke-width="1.5"/>
+<text x="20" y="57" fill="#172e3d" font-size="18" font-weight="700">rlvr-a-v2</text>
+<text x="20" y="78" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="102" fill="#334d5c" font-size="15">@8c2e4f6</text>
+<text x="20" y="123" fill="#64748b" font-size="11">example-org/rlvr-a</text>
 </g>
-<g class="graph-node" transform="translate(2700,335.0)" data-record="exp-005" tabindex="0" role="button" aria-label="Inspect exp-005"><title>RLVR with exact-match rewards</title>
+<g class="graph-node" data-kind="experiment" transform="translate(2700,335.0)" data-record="exp-005" tabindex="0" role="button" aria-label="Inspect exp-005"><title>RLVR with exact-match rewards</title>
 <rect width="280" height="144" rx="16" fill="#f3cec4" stroke="#a03c22" stroke-width="1.5"/>
 <text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">exp-005</text>
 <text x="20" y="56" fill="#334d5c" font-size="15">RLVR with exact-match rewards</text>
 <circle cx="24" cy="105" r="4" fill="#168654"/><text x="35" y="110" fill="#475569" font-size="13">accepted</text>
 <text x="20" y="130" fill="#475569" font-size="11">rlvr, reasoning</text>
 </g>
-<g class="graph-node" transform="translate(3080,430.0)"><title>rlvr-b-v1</title>
-<rect width="280" height="144" rx="30" fill="#f3cec4" stroke="#a03c22" stroke-width="1.5"/>
-<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">rlvr-b-v1</text>
-<text x="20" y="59" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="83" fill="#334d5c" font-size="15">@2f5b8d1</text>
-<text x="20" y="112" fill="#64748b" font-size="11">example-org/rlvr-b</text>
+<g class="graph-node" data-kind="model" transform="translate(3080,430.0)"><title>rlvr-b-v1</title>
+<path d="M0 18 A140 18 0 0 1 280 18 V126 A140 18 0 0 1 0 126 Z" fill="#f3cec4" stroke="#a03c22" stroke-width="1.5"/>
+<ellipse cx="140" cy="18" rx="140" ry="18" fill="#f3cec4" stroke="#a03c22" stroke-width="1.5"/>
+<text x="20" y="57" fill="#172e3d" font-size="18" font-weight="700">rlvr-b-v1</text>
+<text x="20" y="78" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="102" fill="#334d5c" font-size="15">@2f5b8d1</text>
+<text x="20" y="123" fill="#64748b" font-size="11">example-org/rlvr-b</text>
 </g>
-<g class="graph-node" transform="translate(3460,240.0)" data-record="exp-006" tabindex="0" role="button" aria-label="Inspect exp-006"><title>Weighted soup of three RLVR checkpoints</title>
+<g class="graph-node" data-kind="experiment" transform="translate(3460,240.0)" data-record="exp-006" tabindex="0" role="button" aria-label="Inspect exp-006"><title>Weighted soup of three RLVR checkpoints</title>
 <rect width="280" height="144" rx="16" fill="#c4caf3" stroke="#2231a0" stroke-width="1.5"/>
 <text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">exp-006</text>
 <text x="20" y="56" fill="#334d5c" font-size="15">Weighted soup of three RLVR</text>
@@ -157,52 +165,56 @@
 <circle cx="24" cy="105" r="4" fill="#168654"/><text x="35" y="110" fill="#475569" font-size="13">accepted</text>
 <text x="20" y="130" fill="#475569" font-size="11">weight_aggregation, souping</text>
 </g>
-<g class="graph-node" transform="translate(3840,335.0)"><title>soup-v1</title>
-<rect width="280" height="144" rx="30" fill="#c4caf3" stroke="#2231a0" stroke-width="1.5"/>
-<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">soup-v1</text>
-<text x="20" y="59" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="83" fill="#334d5c" font-size="15">@4c1d9e2</text>
-<text x="20" y="112" fill="#64748b" font-size="11">example-org/soup-v1</text>
+<g class="graph-node" data-kind="model" transform="translate(3840,335.0)"><title>soup-v1</title>
+<path d="M0 18 A140 18 0 0 1 280 18 V126 A140 18 0 0 1 0 126 Z" fill="#c4caf3" stroke="#2231a0" stroke-width="1.5"/>
+<ellipse cx="140" cy="18" rx="140" ry="18" fill="#c4caf3" stroke="#2231a0" stroke-width="1.5"/>
+<text x="20" y="57" fill="#172e3d" font-size="18" font-weight="700">soup-v1</text>
+<text x="20" y="78" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="102" fill="#334d5c" font-size="15">@4c1d9e2</text>
+<text x="20" y="123" fill="#64748b" font-size="11">example-org/soup-v1</text>
 </g>
-<g class="graph-node" transform="translate(4220,430.0)" data-record="exp-007" tabindex="0" role="button" aria-label="Inspect exp-007"><title>OPSD on the merged checkpoint</title>
+<g class="graph-node" data-kind="experiment" transform="translate(4220,430.0)" data-record="exp-007" tabindex="0" role="button" aria-label="Inspect exp-007"><title>OPSD on the merged checkpoint</title>
 <rect width="280" height="144" rx="16" fill="#f3c4df" stroke="#a0226c" stroke-width="1.5"/>
 <text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">exp-007</text>
 <text x="20" y="56" fill="#334d5c" font-size="15">OPSD on the merged checkpoint</text>
 <circle cx="24" cy="105" r="4" fill="#168654"/><text x="35" y="110" fill="#475569" font-size="13">accepted</text>
 <text x="20" y="130" fill="#475569" font-size="11">opsd</text>
 </g>
-<g class="graph-node" transform="translate(4600,430.0)"><title>opsd-v1</title>
-<rect width="280" height="144" rx="30" fill="#f3c4df" stroke="#a0226c" stroke-width="1.5"/>
-<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">opsd-v1</text>
-<text x="20" y="59" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="83" fill="#334d5c" font-size="15">@3d7f9a2</text>
-<text x="20" y="112" fill="#64748b" font-size="11">example-org/opsd-v1</text>
+<g class="graph-node" data-kind="model" transform="translate(4600,430.0)"><title>opsd-v1</title>
+<path d="M0 18 A140 18 0 0 1 280 18 V126 A140 18 0 0 1 0 126 Z" fill="#f3c4df" stroke="#a0226c" stroke-width="1.5"/>
+<ellipse cx="140" cy="18" rx="140" ry="18" fill="#f3c4df" stroke="#a0226c" stroke-width="1.5"/>
+<text x="20" y="57" fill="#172e3d" font-size="18" font-weight="700">opsd-v1</text>
+<text x="20" y="78" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="102" fill="#334d5c" font-size="15">@3d7f9a2</text>
+<text x="20" y="123" fill="#64748b" font-size="11">example-org/opsd-v1</text>
 </g>
-<g class="graph-node" transform="translate(4980,430.0)" data-record="exp-008" tabindex="0" role="button" aria-label="Inspect exp-008"><title>Final RLHF alignment round</title>
+<g class="graph-node" data-kind="experiment" transform="translate(4980,430.0)" data-record="exp-008" tabindex="0" role="button" aria-label="Inspect exp-008"><title>Final RLHF alignment round</title>
 <rect width="280" height="144" rx="16" fill="#c4cef3" stroke="#223da0" stroke-width="1.5"/>
 <text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">exp-008</text>
 <text x="20" y="56" fill="#334d5c" font-size="15">Final RLHF alignment round</text>
 <circle cx="24" cy="105" r="4" fill="#168654"/><text x="35" y="110" fill="#475569" font-size="13">accepted</text>
 <text x="20" y="130" fill="#475569" font-size="11">rlhf2</text>
 </g>
-<g class="graph-node" transform="translate(5360,430.0)"><title>rlhf2-v1</title>
-<rect width="280" height="144" rx="30" fill="#c4cef3" stroke="#223da0" stroke-width="1.5"/>
-<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">rlhf2-v1</text>
-<text x="20" y="59" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="83" fill="#334d5c" font-size="15">@1e6c8b4</text>
-<text x="20" y="112" fill="#64748b" font-size="11">example-org/rlhf2-v1</text>
+<g class="graph-node" data-kind="model" transform="translate(5360,430.0)"><title>rlhf2-v1</title>
+<path d="M0 18 A140 18 0 0 1 280 18 V126 A140 18 0 0 1 0 126 Z" fill="#c4cef3" stroke="#223da0" stroke-width="1.5"/>
+<ellipse cx="140" cy="18" rx="140" ry="18" fill="#c4cef3" stroke="#223da0" stroke-width="1.5"/>
+<text x="20" y="57" fill="#172e3d" font-size="18" font-weight="700">rlhf2-v1</text>
+<text x="20" y="78" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="102" fill="#334d5c" font-size="15">@1e6c8b4</text>
+<text x="20" y="123" fill="#64748b" font-size="11">example-org/rlhf2-v1</text>
 </g>
-<g class="graph-node" transform="translate(2700,525.0)" data-record="exp-009" tabindex="0" role="button" aria-label="Inspect exp-009"><title>RLVR with learned rewards</title>
+<g class="graph-node" data-kind="experiment" transform="translate(2700,525.0)" data-record="exp-009" tabindex="0" role="button" aria-label="Inspect exp-009"><title>RLVR with learned rewards</title>
 <rect width="280" height="144" rx="16" fill="#f3cec4" stroke="#a03c22" stroke-width="1.5"/>
 <text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">exp-009</text>
 <text x="20" y="56" fill="#334d5c" font-size="15">RLVR with learned rewards</text>
 <circle cx="24" cy="105" r="4" fill="#d34a4a"/><text x="35" y="110" fill="#475569" font-size="13">rejected</text>
 <text x="20" y="130" fill="#475569" font-size="11">rlvr, reasoning</text>
 </g>
-<g class="graph-node" transform="translate(3080,620.0)"><title>rlvr-c-v1</title>
-<rect width="280" height="144" rx="30" fill="#f3cec4" stroke="#a03c22" stroke-width="1.5"/>
-<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">rlvr-c-v1</text>
-<text x="20" y="59" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="83" fill="#334d5c" font-size="15">@5a9d1f3</text>
-<text x="20" y="112" fill="#64748b" font-size="11">example-org/rlvr-c</text>
+<g class="graph-node" data-kind="model" transform="translate(3080,620.0)"><title>rlvr-c-v1</title>
+<path d="M0 18 A140 18 0 0 1 280 18 V126 A140 18 0 0 1 0 126 Z" fill="#f3cec4" stroke="#a03c22" stroke-width="1.5"/>
+<ellipse cx="140" cy="18" rx="140" ry="18" fill="#f3cec4" stroke="#a03c22" stroke-width="1.5"/>
+<text x="20" y="57" fill="#172e3d" font-size="18" font-weight="700">rlvr-c-v1</text>
+<text x="20" y="78" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="102" fill="#334d5c" font-size="15">@5a9d1f3</text>
+<text x="20" y="123" fill="#64748b" font-size="11">example-org/rlvr-c</text>
 </g>
-<g class="graph-node" transform="translate(2700,715.0)" data-record="exp-010" tabindex="0" role="button" aria-label="Inspect exp-010"><title>RLVR with a longer task horizon</title>
+<g class="graph-node" data-kind="experiment" transform="translate(2700,715.0)" data-record="exp-010" tabindex="0" role="button" aria-label="Inspect exp-010"><title>RLVR with a longer task horizon</title>
 <rect width="280" height="144" rx="16" fill="#f3cec4" stroke="#a03c22" stroke-width="1.5"/>
 <text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">exp-010</text>
 <text x="20" y="56" fill="#334d5c" font-size="15">RLVR with a longer task</text>
@@ -210,13 +222,14 @@
 <circle cx="24" cy="105" r="4" fill="#64748b"/><text x="35" y="110" fill="#475569" font-size="13">in progress</text>
 <text x="20" y="130" fill="#475569" font-size="11">rlvr, reasoning</text>
 </g>
-<g class="graph-node" transform="translate(3080,810.0)"><title>rlvr-d-v1</title>
-<rect width="280" height="144" rx="30" fill="#f3cec4" stroke="#a03c22" stroke-width="1.5"/>
-<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">rlvr-d-v1</text>
-<text x="20" y="59" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="83" fill="#334d5c" font-size="15">@3a6d8e1</text>
-<text x="20" y="112" fill="#64748b" font-size="11">example-org/rlvr-d</text>
+<g class="graph-node" data-kind="model" transform="translate(3080,810.0)"><title>rlvr-d-v1</title>
+<path d="M0 18 A140 18 0 0 1 280 18 V126 A140 18 0 0 1 0 126 Z" fill="#f3cec4" stroke="#a03c22" stroke-width="1.5"/>
+<ellipse cx="140" cy="18" rx="140" ry="18" fill="#f3cec4" stroke="#a03c22" stroke-width="1.5"/>
+<text x="20" y="57" fill="#172e3d" font-size="18" font-weight="700">rlvr-d-v1</text>
+<text x="20" y="78" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="102" fill="#334d5c" font-size="15">@3a6d8e1</text>
+<text x="20" y="123" fill="#64748b" font-size="11">example-org/rlvr-d</text>
 </g>
-<g class="graph-node" transform="translate(3460,430.0)" data-record="exp-012" tabindex="0" role="button" aria-label="Inspect exp-012"><title>Uniform soup of three RLVR checkpoints</title>
+<g class="graph-node" data-kind="experiment" transform="translate(3460,430.0)" data-record="exp-012" tabindex="0" role="button" aria-label="Inspect exp-012"><title>Uniform soup of three RLVR checkpoints</title>
 <rect width="280" height="144" rx="16" fill="#c4caf3" stroke="#2231a0" stroke-width="1.5"/>
 <text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">exp-012</text>
 <text x="20" y="56" fill="#334d5c" font-size="15">Uniform soup of three RLVR</text>
@@ -224,13 +237,14 @@
 <circle cx="24" cy="105" r="4" fill="#d34a4a"/><text x="35" y="110" fill="#475569" font-size="13">rejected</text>
 <text x="20" y="130" fill="#475569" font-size="11">weight_aggregation, souping, ablation</text>
 </g>
-<g class="graph-node" transform="translate(3840,525.0)"><title>soup-uniform-v1</title>
-<rect width="280" height="144" rx="30" fill="#c4caf3" stroke="#2231a0" stroke-width="1.5"/>
-<text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">soup-uniform-v1</text>
-<text x="20" y="59" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="83" fill="#334d5c" font-size="15">@6d2f8a4</text>
-<text x="20" y="112" fill="#64748b" font-size="11">example-org/soup-uniform</text>
+<g class="graph-node" data-kind="model" transform="translate(3840,525.0)"><title>soup-uniform-v1</title>
+<path d="M0 18 A140 18 0 0 1 280 18 V126 A140 18 0 0 1 0 126 Z" fill="#c4caf3" stroke="#2231a0" stroke-width="1.5"/>
+<ellipse cx="140" cy="18" rx="140" ry="18" fill="#c4caf3" stroke="#2231a0" stroke-width="1.5"/>
+<text x="20" y="57" fill="#172e3d" font-size="18" font-weight="700">soup-uniform-v1</text>
+<text x="20" y="78" fill="#64748b" font-size="13">checkpoint</text><text x="20" y="102" fill="#334d5c" font-size="15">@6d2f8a4</text>
+<text x="20" y="123" fill="#64748b" font-size="11">example-org/soup-uniform</text>
 </g>
-<g class="graph-node" transform="translate(5740,430.0)" data-record="exp-013" tabindex="0" role="button" aria-label="Inspect exp-013"><title>Safety-focused preference optimisation</title>
+<g class="graph-node" data-kind="experiment" transform="translate(5740,430.0)" data-record="exp-013" tabindex="0" role="button" aria-label="Inspect exp-013"><title>Safety-focused preference optimisation</title>
 <rect width="280" height="144" rx="16" fill="#ccc4f3" stroke="#3822a0" stroke-width="1.5"/>
 <text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">exp-013</text>
 <text x="20" y="56" fill="#334d5c" font-size="15">Safety-focused preference</text>
@@ -238,7 +252,7 @@
 <circle cx="24" cy="105" r="4" fill="#64748b"/><text x="35" y="110" fill="#475569" font-size="13">in progress</text>
 <text x="20" y="130" fill="#475569" font-size="11">dpo, safety</text>
 </g>
-<g class="graph-node" transform="translate(3460,620.0)" data-record="exp-014" tabindex="0" role="button" aria-label="Inspect exp-014"><title>Unit-test reward ablation</title>
+<g class="graph-node" data-kind="experiment" transform="translate(3460,620.0)" data-record="exp-014" tabindex="0" role="button" aria-label="Inspect exp-014"><title>Unit-test reward ablation</title>
 <rect width="280" height="144" rx="16" fill="#f3cec4" stroke="#a03c22" stroke-width="1.5"/>
 <text x="20" y="30" fill="#172e3d" font-size="18" font-weight="700">exp-014</text>
 <text x="20" y="56" fill="#334d5c" font-size="15">Unit-test reward ablation</text>
@@ -247,6 +261,7 @@
 </g>
 </g>
 </svg></div>
+<div class="shape-key" aria-label="Node shape legend"><span><i class="shape-icon" aria-hidden="true"></i>Experiment</span><span><i class="shape-icon checkpoint" aria-hidden="true"></i>Checkpoint</span></div>
 <div class="tags-footer"><span>Node colours / tags</span><div class="tags"><span class="tag" style="--tag-fill:#f2c4f3;--tag-ink:#9f22a0">ablation</span><span class="tag" style="--tag-fill:#c4f3c5;--tag-ink:#22a026">code</span><span class="tag" style="--tag-fill:#ccc4f3;--tag-ink:#3822a0">dpo</span><span class="tag" style="--tag-fill:#f3c4df;--tag-ink:#a0226c">opsd</span><span class="tag" style="--tag-fill:#f3d1c4;--tag-ink:#a04622">reasoning</span><span class="tag" style="--tag-fill:#d9f3c4;--tag-ink:#5ba022">rlhf1</span><span class="tag" style="--tag-fill:#c4cef3;--tag-ink:#223da0">rlhf2</span><span class="tag" style="--tag-fill:#f3cec4;--tag-ink:#a03c22">rlvr</span><span class="tag" style="--tag-fill:#c4edf3;--tag-ink:#2290a0">safety</span><span class="tag" style="--tag-fill:#e8f3c4;--tag-ink:#82a022">sft</span><span class="tag" style="--tag-fill:#c4f3ef;--tag-ink:#22a097">souping</span><span class="tag" style="--tag-fill:#c4caf3;--tag-ink:#2231a0">weight_aggregation</span></div></div></section>
 <noscript><p>The diagram and records are available below. Enable JavaScript for zoom, pan and search.</p></noscript>
 <section id="experiments" aria-labelledby="experiments-heading"><div class="section-head"><div><div class="section-kicker">The evidence behind the graph</div><h2 id="experiments-heading">Experiment records</h2><p class="subtitle">Code, configuration, checkpoints and decisions in one place.</p></div><div class="filters"><label class="sr-only" for="search">Search experiments</label><input id="search" type="search" placeholder="Search titles, tags, methods…"><label class="sr-only" for="status-filter">Filter by status</label><select id="status-filter"><option value="all">All statuses</option><option value="accepted">Accepted</option><option value="in_progress">In progress</option><option value="rejected">Rejected</option></select></div></div><p class="result-count" id="result-count" aria-live="polite"></p><div class="record-grid"><details class="record" id="record-exp-001" data-status="accepted" data-search="exp-001 supervised fine-tuning on the instruction set  [&#x27;sft&#x27;] sft ">
