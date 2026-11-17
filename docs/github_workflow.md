@@ -1,7 +1,7 @@
 # GitHub CI/CD
 
-The [registry workflow](../../.github/workflows/registry.yml) validates experiment metadata and publishes
-[`LINEAGE.md`](../../LINEAGE.md). Its project settings come from [`config.yaml`](../../config.yaml):
+The [registry workflow](../.github/workflows/registry.yml) validates experiment metadata and publishes
+[`LINEAGE.md`](../LINEAGE.md). Its project settings come from [`config.yaml`](../config.yaml):
 `project_name` titles the document and `main_branch` selects the Git branch used for publication.
 
 1. **Pull requests:** Install the Python dependencies, run the tests and validate the active and
@@ -15,7 +15,7 @@ The [registry workflow](../../.github/workflows/registry.yml) validates experime
 
 ## What validation checks
 
-The [registry validator](../../scripts/registry.py) checks:
+The [registry validator](../scripts/registry.py) checks:
 
 - **Project configuration:** Exactly `project_name` and `main_branch`, both nonempty strings;
   `main_branch` must be a valid Git branch name.
